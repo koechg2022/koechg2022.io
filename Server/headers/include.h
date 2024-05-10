@@ -56,17 +56,17 @@ namespace Network_Management {
             }
         }
 
-    }
+        void initialize_network() {
+            #if defined(crap_os)
+                WSADATA d;
 
-    void initialize_network() {
-        #if defined(crap_os)
-            WSADATA d;
+                if (WSAStartup(MAKEWORD(2, 2), &d)) {
+                    std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
+                    std::exit(EXIT_FAILURE);
+                }
+            #endif
+        }
 
-            if (WSAStartup(MAKEWORD(2, 2), &d)) {
-                std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
-                std::exit(EXIT_FAILURE);
-            }
-        #endif
     }
 
     namespace Host {
@@ -183,7 +183,7 @@ namespace Network_Management {
             return the_answer;
         }
 
-        
+
 
     }
 
