@@ -67,8 +67,7 @@ namespace Network_Management {
                 WSADATA d;
 
                 if (WSAStartup(MAKEWORD(2, 2), &d)) {
-                    std::cerr << "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS" << std::endl;
-                    // std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
+                    std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
                     std::exit(EXIT_FAILURE);
                 }
             #endif
@@ -95,20 +94,18 @@ namespace Network_Management {
                 initialize_network();
 
                 DWORD size = 20000;
-                PIP_ADAPTER_ADDRESSES adapter, adapters;
-                PIP_ADAPTER_UNICAST_ADDRESS this_address;
+                PIP_ADAPTER_ADDRESSES adapters;
 
                 do {
                     adapters = (PIP_ADAPTER_ADDRESSES) malloc(size);
 
                     if (!adapters) {
-                        std::cerr << "Couldn't allocate " << size << " bytes for adapters." << std::endl;
-                        // std::fprintf(stderr, "Couldn't allocate %ld bytes for adapters.\n", size);
+                        std::printf("Couldn't allocate %ld bytes for adapters.\n", size);
+                        clean_up_network();
                         std::exit(EXIT_FAILURE);
                     }
 
                     int r = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, 0, adapters, &size);
-
                     if (r == ERROR_BUFFER_OVERFLOW) {
                         std::printf("GetAdaptersAddresses wants %ld bytes.\n", size);
                         free(adapters);
@@ -119,52 +116,51 @@ namespace Network_Management {
                     }
 
                     else {
-                        std::cerr << "Error retrieving adapter information for Crap Operating System. Maybe you should get a better OS" << std::endl;
-                        // std::fprintf(stderr, "Error retrieving adapter information for Crap Operating System. Maybe you should get a better OS\n");
+                        std::printf("Error from GetAdaptersAddresses: %d\n", r);
                         free(adapters);
-                        // WSACleanup();
                         clean_up_network();
                         std::exit(EXIT_FAILURE);
                     }
 
                 } while (!adapters);
 
-                
-                while (adapter) {
-                    
-                    adapter_name = std::string((char*) adapter->FriendlyName);
-                    this_address = adapter->FirstUnicastAddress;
-                    adapter_name = std::string(this_address->Address.lpSockaddr->sa_family == AF_INET ? "IP Version 4" : "IP version 6");
-                    std::memset(ap_buffer, 0, buffer_size);
-                    getnameinfo(this_address->Address.lpSockaddr, this_address->Address.iSockaddrLength, ap_buffer, buffer_size, 0, 0, NI_NUMERICHOST);
-                    ip_address = std::string(ap_buffer);
-                    // add adapter_name if it's not present.
-                    if (the_answer.find(adapter_name) == the_answer.end()) {
-                        
-                        // create the internal map with ip_address mapped to a vector, if not present
-                        std::map<std::string, std::vector<std::string> > internal_map;
-                        std::vector<std::string> new_list;
-                        new_list.push_back(ip_address);
-                        internal_map.insert(std::make_pair(ip_address_version, new_list));
-                        the_answer.insert(std::make_pair(adapter_name, internal_map));
+                PIP_ADAPTER_ADDRESSES this_adapter = adapters;
 
-                    }
+                while (this_adapter) {
+                    adapter_name = std::string((char*) (this_adapter->FriendlyName));
 
-                    else {
-                        the_answer[adapter_name][ip_address_version].push_back(ip_address);
+                    PIP_ADAPTER_UNICAST_ADDRESS this_address = this_adapter->FirstUnicastAddress;
+                    while (this_address) {
+                        ip_address_version = (this_address->Address.lpSockaddr->sa_family == AF_INET) ? ip_4 : ip_6;
+                        std::memset(ap_buffer, 0, buffer_size);
+                        getnameinfo(this_address->Address.lpSockaddr, this_address->Address.iSockaddrLength, ap_buffer, buffer_size, 0, 0, NI_NUMERICHOST);
+                        ip_address = std::string(ap_buffer);
+
+                        if (the_answer.find(adapter_name) == the_answer.end()) {
+
+                            // create the internal map with ip_address mapped to a vector, if not present
+                            std::map<std::string, std::vector<std::string> > internal_map;
+                            std::vector<std::string> new_list;
+                            new_list.push_back(ip_address);
+                            internal_map.insert(std::make_pair(ip_address_version, new_list));
+                            the_answer.insert(std::make_pair(adapter_name, internal_map));
+                        }
+
+                        else {
+                            the_answer[adapter_name][ip_address_version].push_back(ip_address);
+                        }
+                        this_address = this_address->Next;
                     }
-                    adapter = adapter->Next;
+                    this_adapter = this_adapter->Next;
                 }
 
-                // WSACleanup();
                 clean_up_network();
 
             #else
                 struct ifaddrs* addresses, *this_address;
                 
                 if (getifaddrs(&addresses)) {
-                    std::cerr << "Failed retrieving adapter information. Error " << get_socket_errno() << std::endl;
-                    // std::fprintf(stderr, "Failed retrieving adapter information. Error %d\n", get_socket_errno());
+                    std::fprintf(stderr, "Failed retrieving adapter information. Error %d\n", get_socket_errno());
                     std::exit(EXIT_FAILURE);
                 }
 
@@ -217,8 +213,7 @@ namespace Network_Management {
                 hints.ai_socktype = SOCK_STREAM;
 
                 if ((status = getaddrinfo(url.c_str(), port.c_str(), &hints, &server_info)) != 0) {
-                    std::cerr << "Failed to retrieve information for URL \"" << url << "\"" << std::endl << "Error Message \"" << gai_strerror(status) << std:: endl;
-                    // std::fprintf(stderr, "Failed to retrieve information for URL \"%s\"\nError Message \"%s\"\n", url.c_str(), gai_strerror(status));
+                    std::fprintf(stderr, "Failed to retrieve information for URL \"%s\"\nError Message \"%s\"\n", url.c_str(), gai_strerror(status));
                     std::exit(EXIT_FAILURE);
                 }
 
