@@ -38,9 +38,10 @@
 #endif
 
 
+#include <iostream>
 #include <map>
 #include <vector>
-#include "../../libraries/structures.h"
+// #include "../../libraries/structures.h"
 
 #define buffer_size 100
 
@@ -199,6 +200,7 @@ namespace Network_Management {
         namespace HTTP {
 
             const std::map<std::string, std::vector<std::string> > get_url_ip(const std::string url, std::string port = "80") {
+                initialize_network();
                 std::map<std::string, std::vector<std::string> > the_answer;
                 int status;
                 struct addrinfo hints, *server_info, *this_address;
@@ -239,7 +241,7 @@ namespace Network_Management {
                 }
 
                 freeaddrinfo(server_info);
-
+                clean_up_network();
                 return the_answer;
             }
 
