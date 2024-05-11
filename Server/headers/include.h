@@ -7,6 +7,50 @@
 
 namespace Network_Management {
 
+    namespace Network_Exceptions {
+
+        class NetworkInitialization : std::exception {
+            private:
+                std::string msg;
+            public:
+                NetworkInitialization(std::string msg = "Failed to Initialize Network"){
+                    this->msg = msg;
+                }
+
+                ~NetworkInitialization() throw() {
+                    return;
+                }
+
+                char* what() {
+                    return (char*) this->msg.c_str();
+                }
+
+        };
+
+        class MemoryManagement : std::exception {
+
+            private:
+                std::string msg;
+            
+            public:
+
+                MemoryManagement(const std::string msg = "Memory failure") : std::exception {
+                    this->msg = msg;
+                }
+
+                ~MemoryManagement() throw() {
+                    return;
+                }
+
+                char* what() {
+                    return (char*) this->msg.c_str();
+                }
+
+        };
+
+    }
+
+
     namespace {
 
         const std::string ip_4 = "IP Version 4";
