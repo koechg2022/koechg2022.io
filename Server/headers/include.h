@@ -67,7 +67,8 @@ namespace Network_Management {
                 WSADATA d;
 
                 if (WSAStartup(MAKEWORD(2, 2), &d)) {
-                    std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
+                    std::cerr << "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS" << std::endl;
+                    // std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
                     std::exit(EXIT_FAILURE);
                 }
             #endif
@@ -101,7 +102,8 @@ namespace Network_Management {
                     adapters = (PIP_ADAPTER_ADDRESSES) malloc(size);
 
                     if (!adapters) {
-                        std::fprintf(stderr, "Couldn't allocate %ld bytes for adapters.\n", size);
+                        std::cerr << "Couldn't allocate " << size << " bytes for adapters." << std::endl;
+                        // std::fprintf(stderr, "Couldn't allocate %ld bytes for adapters.\n", size);
                         std::exit(EXIT_FAILURE);
                     }
 
@@ -117,7 +119,8 @@ namespace Network_Management {
                     }
 
                     else {
-                        std::fprintf(stderr, "Error retrieving adapter information for Crap Operating System. Maybe you should get a better OS\n");
+                        std::cerr << "Error retrieving adapter information for Crap Operating System. Maybe you should get a better OS" << std::endl;
+                        // std::fprintf(stderr, "Error retrieving adapter information for Crap Operating System. Maybe you should get a better OS\n");
                         free(adapters);
                         // WSACleanup();
                         clean_up_network();
@@ -160,7 +163,8 @@ namespace Network_Management {
                 struct ifaddrs* addresses, *this_address;
                 
                 if (getifaddrs(&addresses)) {
-                    std::fprintf(stderr, "Failed retrieving adapter information. Error %d\n", get_socket_errno());
+                    std::cerr << "Failed retrieving adapter information. Error " << get_socket_errno() << std::endl;
+                    // std::fprintf(stderr, "Failed retrieving adapter information. Error %d\n", get_socket_errno());
                     std::exit(EXIT_FAILURE);
                 }
 
@@ -213,7 +217,8 @@ namespace Network_Management {
                 hints.ai_socktype = SOCK_STREAM;
 
                 if ((status = getaddrinfo(url.c_str(), port.c_str(), &hints, &server_info)) != 0) {
-                    std::fprintf(stderr, "Failed to retrieve information for URL \"%s\"\nError Message \"%s\"\n", url.c_str(), gai_strerror(status));
+                    std::cerr << "Failed to retrieve information for URL \"" << url << "\"" << std::endl << "Error Message \"" << gai_strerror(status) << std:: endl;
+                    // std::fprintf(stderr, "Failed to retrieve information for URL \"%s\"\nError Message \"%s\"\n", url.c_str(), gai_strerror(status));
                     std::exit(EXIT_FAILURE);
                 }
 
