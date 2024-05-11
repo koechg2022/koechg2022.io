@@ -8,7 +8,9 @@
 
     #include <winsock2.h>
     #include <ws2tcpip.h>
+    #include <iphlpapi.h>
     #pragma comment(lib, "ws2_32.lib")
+    #pragma comment(lib, "iphlpapi.lib")
 
     #define crap_os
     #define valid_socket(sock_no) (sock_no != INVALID_SOCKET)
@@ -99,14 +101,14 @@ namespace Network_Management {
                     adapters = (PIP_ADAPTER_ADDRESSES) malloc(size);
 
                     if (!adapters) {
-                        std::fprintf(stderr, "Couldn't allocate %d bytes for adapters.\n");
+                        std::fprintf(stderr, "Couldn't allocate %d bytes for adapters.\n", size);
                         std::exit(EXIT_FAILURE);
                     }
 
                     int r = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, 0, adapters, &size);
 
                     if (r == ERROR_BUFFER_OVERFLOW) {
-                        std::printf("GetAdaptersAddresses wants %ld bytes.\n");
+                        std::printf("GetAdaptersAddresses wants %ld bytes.\n", size);
                         free(adapters);
                     }
 
@@ -127,11 +129,11 @@ namespace Network_Management {
                 
                 while (adapter) {
                     
-                    adapter_name = std::string(adapter->FriendlyName);
+                    adapter_name = std::string((char*) adapter->FriendlyName);
                     this_address = adapter->FirstUnicastAddress;
                     adapter_name = std::string(this_address->Address.lpSockaddr->sa_family == AF_INET ? "IP Version 4" : "IP version 6");
                     std::memset(ap_buffer, 0, buffer_size);
-                    getnameinfo(address->Address.lpSockaddr, iSOckaddrLength, ap_buffer, buffer_size, 0, 0, NI_NUMERICHOST);
+                    getnameinfo(this_address->Address.lpSockaddr, this_address->Address.iSockaddrLength, ap_buffer, buffer_size, 0, 0, NI_NUMERICHOST);
                     ip_address = std::string(ap_buffer);
                     // add adapter_name if it's not present.
                     if (the_answer.find(adapter_name) == the_answer.end()) {
