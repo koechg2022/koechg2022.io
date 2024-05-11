@@ -13,7 +13,7 @@ namespace Network_Management {
             private:
                 std::string msg;
             public:
-                NetworkInitialization(std::string msg = "Failed to Initialize Network"){
+                NetworkInitialization(std::string msg = "Failed to Initialize Network") : std::exception(){
                     this->msg = msg;
                 }
 
@@ -34,7 +34,7 @@ namespace Network_Management {
             
             public:
 
-                MemoryManagement(const std::string msg = "Memory failure") : std::exception {
+                MemoryManagement(const std::string msg = "Memory failure") : std::exception() {
                     this->msg = msg;
                 }
 
