@@ -1,6 +1,11 @@
 
 #include "headers/include.h"
 
+/*
+    To compile:
+        * Unix : clang++ this_file -o object_file -std=c++20
+        * Crap OS : clang++ this_file -o object_file -liphlpapi -lws2_32 -std=c++20
+*/
 
 int main(int len, char** args) {
 
