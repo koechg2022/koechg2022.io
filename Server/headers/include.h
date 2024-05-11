@@ -67,6 +67,12 @@ namespace Network_Management {
             #endif
         }
 
+        void clean_up_network() {
+            #if defined(crap_os)
+                WSACleanup();
+            #endif
+        }
+
     }
 
     namespace Host {
@@ -107,7 +113,8 @@ namespace Network_Management {
                     else {
                         std::fprintf(stderr, "Error retrieving adapter information for Crap Operating System. Maybe you should get a better OS\n");
                         free(adapters);
-                        WSACleanup();
+                        // WSACleanup();
+                        clean_up_network();
                         std::exit(EXIT_FAILURE);
                     }
 
@@ -119,7 +126,7 @@ namespace Network_Management {
                     adapter_name = std::string(adapter->FriendlyName);
                     this_address = adapter->FirstUnicastAddress;
                     adapter_name = std::string(this_address->Address.lpSockaddr->sa_family == AF_INET ? "IP Version 4" : "IP version 6");
-                    fill_buffer_with(0, ap_buffer, buffer_size);
+                    std::memset(ap_buffer, 0, buffer_size);
                     getnameinfo(address->Address.lpSockaddr, iSOckaddrLength, ap_buffer, buffer_size, 0, 0, NI_NUMERICHOST);
                     ip_address = std::string(ap_buffer);
                     // add adapter_name if it's not present.
@@ -140,7 +147,8 @@ namespace Network_Management {
                     adapter = adapter->Next;
                 }
 
-                WSACleanup();
+                // WSACleanup();
+                clean_up_network();
 
             #else
                 struct ifaddrs* addresses, *this_address;
@@ -156,7 +164,8 @@ namespace Network_Management {
                     if (this_address->ifa_addr->sa_family == AF_INET || this_address->ifa_addr->sa_family == AF_INET6) {
                         adapter_name = std::string(this_address->ifa_name);
                         ip_address_version = std::string((this_address->ifa_addr->sa_family == AF_INET) ? "IP Version 4" : "IP Version 6");
-                        fill_buffer_with(0, ap_buffer, buffer_size);
+                        // fill_buffer_with(0, ap_buffer, buffer_size);
+                        std::memset(ap_buffer, 0, buffer_size);
                         getnameinfo(this_address->ifa_addr, this_address->ifa_addr->sa_family == AF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6), ap_buffer, buffer_size, 0, 0, NI_NUMERICHOST);
                         ip_address = std::string(ap_buffer);
                         // add adapter_name if it's not present.
@@ -182,8 +191,6 @@ namespace Network_Management {
             
             return the_answer;
         }
-
-        
 
     }
 
