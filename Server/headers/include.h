@@ -155,57 +155,51 @@ namespace Network_Management {
             return the_answer;
         }
 
+        const std::map<std::string, std::vector<std::string> > get_url_ip(const std::string url, std::string port = "80") {
+            initialize_network();
+            std::map<std::string, std::vector<std::string> > the_answer;
+            int status;
+            struct addrinfo hints, *server_info, *this_address;
+            std::string ip_version;
+            char ip_buffer[buffer_size];
+            std::memset(&hints, 0, sizeof(hints));
+            hints.ai_family = AF_UNSPEC;
+            hints.ai_socktype = SOCK_STREAM;
 
-        namespace HTTP {
-
-            const std::map<std::string, std::vector<std::string> > get_url_ip(const std::string url, std::string port = "80") {
-                initialize_network();
-                std::map<std::string, std::vector<std::string> > the_answer;
-                int status;
-                struct addrinfo hints, *server_info, *this_address;
-                std::string ip_version;
-                char ip_buffer[buffer_size];
-                std::memset(&hints, 0, sizeof(hints));
-                hints.ai_family = AF_UNSPEC;
-                hints.ai_socktype = SOCK_STREAM;
-
-                if ((status = getaddrinfo(url.c_str(), port.c_str(), &hints, &server_info)) != 0) {
-                    std::fprintf(stderr, "Failed to retrieve information for URL \"%s\"\nError Message \"%s\"\n", url.c_str(), gai_strerror(status));
-                    std::exit(EXIT_FAILURE);
-                }
-
-                std::vector<std::string> v4_addresses, v6_addresses;
-                the_answer.insert(std::make_pair((std::string) ip_4, v4_addresses));
-                the_answer.insert(std::make_pair((std::string) ip_6, v6_addresses));
-
-                for (this_address = server_info; this_address != NULL; this_address = this_address->ai_next) {
-
-                    void* address_info;
-
-                    if (this_address->ai_family == AF_INET) {
-                        struct sockaddr_in* ip_version_four = (struct sockaddr_in*) this_address->ai_addr;
-                        address_info = &(ip_version_four->sin_addr);
-                        ip_version = ip_4;
-                    }
-
-                    else {
-                        struct sockaddr_in6* ip_version_six = (struct sockaddr_in6*) this_address->ai_addr;
-                        address_info = &(ip_version_six->sin6_addr);
-                        ip_version = ip_6;
-                    }
-
-                    inet_ntop(this_address->ai_family, address_info, ip_buffer, buffer_size);
-                    the_answer[ip_version].push_back(std::string(ip_buffer));
-
-                }
-
-                freeaddrinfo(server_info);
-                clean_up_network();
-                return the_answer;
+            if ((status = getaddrinfo(url.c_str(), port.c_str(), &hints, &server_info)) != 0) {
+                std::fprintf(stderr, "Failed to retrieve information for URL \"%s\"\nError Message \"%s\"\n", url.c_str(), gai_strerror(status));
+                std::exit(EXIT_FAILURE);
             }
 
-        }
+            std::vector<std::string> v4_addresses, v6_addresses;
+            the_answer.insert(std::make_pair((std::string) ip_4, v4_addresses));
+            the_answer.insert(std::make_pair((std::string) ip_6, v6_addresses));
 
+            for (this_address = server_info; this_address != NULL; this_address = this_address->ai_next) {
+
+                void* address_info;
+
+                if (this_address->ai_family == AF_INET) {
+                    struct sockaddr_in* ip_version_four = (struct sockaddr_in*) this_address->ai_addr;
+                    address_info = &(ip_version_four->sin_addr);
+                    ip_version = ip_4;
+                }
+
+                else {
+                    struct sockaddr_in6* ip_version_six = (struct sockaddr_in6*) this_address->ai_addr;
+                    address_info = &(ip_version_six->sin6_addr);
+                    ip_version = ip_6;
+                }
+
+                inet_ntop(this_address->ai_family, address_info, ip_buffer, buffer_size);
+                the_answer[ip_version].push_back(std::string(ip_buffer));
+
+            }
+
+            freeaddrinfo(server_info);
+            clean_up_network();
+            return the_answer;
+        }
 
     }
 

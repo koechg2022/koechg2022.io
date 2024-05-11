@@ -33,7 +33,7 @@ int main(int len, char** args) {
 
     if (len > 1) {
         std::printf("-------------------------------------------------------------------------------------------------------------------------\n");
-        std::map<std::string, std::vector<std::string> > http_ip_info = Network_Management::Host::HTTP::get_url_ip(std::string(args[1]));
+        std::map<std::string, std::vector<std::string> > http_ip_info = Network_Management::Host::get_url_ip(std::string(args[1]));
         std::printf("IP address information for \"%s\":\n", args[1]);
 
         for (std::map<std::string, std::vector<std::string> >::const_iterator http_url = http_ip_info.begin(); http_url != http_ip_info.end(); http_url++) {
