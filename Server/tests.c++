@@ -26,5 +26,22 @@ int main(int len, char** args) {
 
     }
 
+    if (len > 1) {
+        std::printf("-------------------------------------------------------------------------------------------------------------------------\n");
+        std::map<std::string, std::vector<std::string> > http_ip_info = Network_Management::Host::HTTP::get_url_ip(std::string(args[1]));
+        std::printf("IP address information for \"%s\":\n", args[1]);
+
+        for (std::map<std::string, std::vector<std::string> >::const_iterator http_url = http_ip_info.begin(); http_url != http_ip_info.end(); http_url++) {
+
+            // http_url->first is the IP Version
+            std::printf("\t%s:\n", http_url->first.c_str());
+            for (std::vector<std::string>::const_iterator ip_address = http_url->second.begin(); ip_address != http_url->second.end(); ip_address++) {
+                std::printf("\t\t%s\n", ip_address->c_str());
+            }
+
+        }
+
+    }
+
     return 0;
 }
