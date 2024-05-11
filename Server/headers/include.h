@@ -101,7 +101,7 @@ namespace Network_Management {
                     adapters = (PIP_ADAPTER_ADDRESSES) malloc(size);
 
                     if (!adapters) {
-                        std::fprintf(stderr, "Couldn't allocate %d bytes for adapters.\n", size);
+                        std::fprintf(stderr, "Couldn't allocate %ld bytes for adapters.\n", size);
                         std::exit(EXIT_FAILURE);
                     }
 
