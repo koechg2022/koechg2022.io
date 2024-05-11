@@ -38,9 +38,9 @@
 #endif
 
 
-#include "../../libraries/structures.h"
-#include <vector>
 #include <map>
+#include <vector>
+#include "../../libraries/structures.h"
 
 #define buffer_size 100
 
@@ -189,6 +189,12 @@ namespace Network_Management {
 
             #endif
             
+            return the_answer;
+        }
+
+        const std::map<std::string, std::vector<std::string> > get_url_ip(const std::string url, std::string port = "80") {
+            std::map<std::string, std::vector<std::string> > the_answer;
+
             return the_answer;
         }
 
