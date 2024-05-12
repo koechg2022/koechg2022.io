@@ -48,6 +48,25 @@ namespace Network_Management {
 
         };
 
+        class IllegalAdapter : std::exception {
+            private:
+                std::string msg;
+            
+            public:
+                IllegalAdapter(std::string msg = "Illegal Adapter used") : std::exception() {
+                    this->msg = msg;
+                }
+
+                ~IllegalAdapter() throw() {
+                    return;
+                }
+
+                char* what() {
+                    return (char*) this->msg.c_str();
+                }
+
+        };
+
     }
 
 
@@ -55,6 +74,56 @@ namespace Network_Management {
 
         const std::string ip_4 = "IP Version 4";
         const std::string ip_6 = "IP Version 6";
+
+        bool network_initialized = false;
+
+        bool is_caps(char c) {
+            return (c >= 'A' && c <= 'Z');
+        }
+
+        bool is_lower(char c) {
+            return (c >= 'a' && c <= 'z');
+        }
+
+        bool is_letter(char c) {
+            return (is_caps(c) || is_lower(c));
+        }
+
+        bool is_number(char c) {
+            return (c >= '0' && c <= '9');
+        }
+
+        char to_caps(char c) {
+            return (is_lower(c)) ? c - ('a' - 'A') : c;
+        }
+
+        char to_lower(char c) {
+            return (is_caps(c)) ? c + ('a' - 'A') : c;
+        }
+
+        bool same_char(char a, char b, bool ignore_case = true) {
+            return (ignore_case) ? to_caps(a) == to_caps(b) : a == b;
+        }
+
+        bool same_string(char* first, char* second, bool ignore_case = true) {
+            unsigned long index;
+            for (index = 0; first[index] != '\0' && second[index] != '\0'; index = index + 1) {
+                if (!same_char(first[index], second[index], ignore_case)) {
+                    return false;
+                }
+            }
+            return (first[index] == '\0' && second[index] == '\0');
+        }
+
+        bool same_string(std::string first, std::string second, bool ignore_case = true) {
+            unsigned long index;
+            for (index = 0; index < first.length() && index < second.length(); index = index + 1) {
+                if (!same_char(first[index], second[index], ignore_case)) {
+                    return false;
+                }
+            }
+            return (index == first.length() && index == second.length());
+        }
 
         void fill_buffer_with(char to_fill, char* buffer, unsigned long length) {
             unsigned long index;
@@ -65,18 +134,25 @@ namespace Network_Management {
 
         void initialize_network() {
             #if defined(crap_os)
-                WSADATA d;
+                if (!network_initialized) {
+                    
+                    WSADATA d;
+                    if (WSAStartup(MAKEWORD(2, 2), &d)) {
+                        std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
+                        std::exit(EXIT_FAILURE);
+                    }
+                    network_initialized = true;
 
-                if (WSAStartup(MAKEWORD(2, 2), &d)) {
-                    std::fprintf(stderr, "Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
-                    std::exit(EXIT_FAILURE);
                 }
             #endif
         }
 
         void clean_up_network() {
             #if defined(crap_os)
-                WSACleanup();
+                if (network_initialized) {
+                    WSACleanup();
+                }
+                network_initialized = false;
             #endif
         }
 
@@ -244,6 +320,61 @@ namespace Network_Management {
             clean_up_network();
             return the_answer;
         }
+
+        class Host_Machine {
+
+            private:
+
+                std::string remote_address, remote_port;
+                std::map<std::string, std::vector<std::string> > connected_machine_ips;
+
+                const std::map<std::string, std::map<std::string, std::vector<std::string> > > this_machine_adapters = get_network_adapters();
+
+                void initialize_for_crap_os() {
+                    #if defined(crap_os)
+                        if (!network_initialized) {
+                            
+                            WSADATA this_data;
+                            if (WSAStartup(MAKEWORD(2, 2), &this_data)) {
+                                throw Network_Exceptions::NetworkInitialization("Failed to initialize startup for Crap Operating System. Maybe you should consider a better OS\n");
+                            }
+
+                        }
+                    #endif
+                }
+
+                void clean_up_for_crap_os() {
+                    #if defined(crap_os)
+                        if (network_initialized) {
+                            WSACleanup();
+                        }
+                    #endif
+                }
+
+            public:
+
+                Host_Machine(std::string remote_address = "localhost", std::string port_no = "80") {
+                    this->remote_address = remote_address;
+                    this->remote_port = port_no;
+                    this->connected_machine_ips = get_url_ip(this->remote_address, this->remote_port);
+                }
+
+                std::map<std::string, std::vector<std::string> > get_adapter_ip(std::string adapter_name, bool exact_case = false) {
+                    std::map<std::string, std::vector<std::string> > the_answer;
+                    for (std::map<std::string, std::map<std::string, std::vector<std::string> > >::const_iterator 
+                        adapter_pair = this->this_machine_adapters.begin();
+                        adapter_pair != this->this_machine_adapters.end();
+                        adapter_pair++
+                    ){
+                        if (same_string(adapter_name, adapter_pair->first, !exact_case)) {
+                            the_answer = adapter_pair->second;
+                            break;
+                        }
+                    }
+                    return the_answer;
+                }
+
+        };
 
     }
 
