@@ -321,7 +321,7 @@ namespace Network_Management {
             return the_answer;
         }
 
-        class Host_Machine {
+        class Some_Machine {
 
             private:
 
@@ -353,10 +353,14 @@ namespace Network_Management {
 
             public:
 
-                Host_Machine(std::string remote_address = "localhost", std::string port_no = "80") {
+                Some_Machine(std::string remote_address = "localhost", std::string port_no = "80") {
                     this->remote_address = remote_address;
                     this->remote_port = port_no;
                     this->connected_machine_ips = get_url_ip(this->remote_address, this->remote_port);
+                }
+
+                ~Some_Machine(){
+                    this->clean_up_for_crap_os();
                 }
 
                 std::map<std::string, std::vector<std::string> > get_adapter_ip(std::string adapter_name, bool exact_case = false) {

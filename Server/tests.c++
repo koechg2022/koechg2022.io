@@ -48,5 +48,16 @@ int main(int len, char** args) {
 
     }
 
+    std::printf("-------------------------------------------------------------------------------------------------------------------------\n");
+    std::string adapter_name = "en0";
+    Network_Management::Host::Some_Machine this_machine;
+    std::map<std::string, std::vector<std::string> > en0_adapter = this_machine.get_adapter_ip(adapter_name);
+    for (std::map<std::string, std::vector<std::string> >::const_iterator item = en0_adapter.begin(); item != en0_adapter.end(); item++) {
+        std::printf("IP addresses for %s's %s:\n", adapter_name.c_str(), item->first.c_str());
+        for (std::vector<std::string>::const_iterator ip_address = item->second.begin(); ip_address != item->second.end(); ip_address++) {
+            std::printf("\t%s\n", ip_address->c_str());
+        }
+    }
+
     return 0;
 }
