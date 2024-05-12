@@ -339,7 +339,7 @@ namespace Network_Management {
                 std::string remote_address, remote_port;
                 std::map<std::string, std::vector<std::string> > connected_machine_ips;
 
-                const std::map<std::string, std::map<std::string, std::vector<std::string> > > this_machine_adapters = get_network_adapters();
+                std::map<std::string, std::map<std::string, std::vector<std::string> > > this_machine_adapters;// = (const std::map<std::string, std::map<std::string, std::vector<std::string> > >) get_network_adapters();
 
                 void initialize_for_crap_os() {
                     #if defined(crap_os)
@@ -368,6 +368,7 @@ namespace Network_Management {
                     this->remote_address = remote_address;
                     this->remote_port = port_no;
                     this->connected_machine_ips = get_url_ip(this->remote_address, this->remote_port);
+                    this_machine_adapters = get_network_adapters();
                 }
 
                 ~Some_Machine(){
