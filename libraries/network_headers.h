@@ -43,7 +43,18 @@
 #endif
 
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <exception>
+#ifndef _IOSTREAM_
+    #include <iostream>
+#endif
+
+#ifndef _MAP_
+    #include <map>
+#endif
+
+#ifndef _VECTOR_
+    #include <vector>
+#endif
+
+#ifndef _EXCEPTION_
+    #include <exception>
+#endif
