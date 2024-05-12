@@ -363,7 +363,20 @@ namespace Network_Management {
                     this->clean_up_for_crap_os();
                 }
 
-                std::map<std::string, std::vector<std::string> > get_adapter_ip(std::string adapter_name, bool exact_case = false) {
+                std::vector<std::string> get_current_machine_adapter_names() {
+                    std::vector<std::string> the_answer;
+
+                    for (std::map<std::string, std::map<std::string, std::vector<std::string> > >::const_iterator
+                        adapter_pair = this->this_machine_adapters.begin();
+                        adapter_pair != this->this_machine_adapters.end();
+                        adapter_pair++
+                    ) {
+                        the_answer.push_back(adapter_pair->first);
+                    }
+                    return the_answer;
+                }
+
+                std::map<std::string, std::vector<std::string> > get_current_machine_adapter_ip(std::string adapter_name, bool exact_case = false) {
                     std::map<std::string, std::vector<std::string> > the_answer;
                     for (std::map<std::string, std::map<std::string, std::vector<std::string> > >::const_iterator 
                         adapter_pair = this->this_machine_adapters.begin();
@@ -376,6 +389,19 @@ namespace Network_Management {
                         }
                     }
                     return the_answer;
+                }
+
+                const std::map<std::string, std::vector<std::string> > get_remote_machine_ips() {
+                    std::map<std::string, std::vector<std::string> > the_answer = this->connected_machine_ips;
+                    return the_answer;
+                }
+
+                const std::string get_remote_address() const {
+                    return this->remote_address;
+                }
+
+                const std::string get_remote_port() const {
+                    return this->remote_port;
                 }
 
         };
