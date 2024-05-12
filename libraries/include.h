@@ -58,6 +58,15 @@ namespace string_management {
 
 namespace Network_Management {
 
+    sock get_invalid_socket() {
+        #if defined(crap_os)
+            return INVALID_SOCKET;
+        #else
+            return -1;
+        #endif
+
+    }
+
     namespace Network_Exceptions {
 
         class NetworkInitialization : std::exception {
@@ -119,7 +128,6 @@ namespace Network_Management {
         };
 
     }
-
 
     namespace {
 
@@ -402,10 +410,19 @@ namespace Network_Management {
                 const std::string get_remote_address() const {
                     return this->remote_address;
                 }
+                
+                void update_remote_address(const std::string new_address) {
+                    this->remote_address = new_address;
+                }
 
                 const std::string get_remote_port() const {
                     return this->remote_port;
                 }
+
+                void update_remote_port(const std::string new_port) {
+                    this->remote_port = new_port;
+                }
+
 
         };
 
