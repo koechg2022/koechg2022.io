@@ -136,13 +136,6 @@ namespace Network_Management {
 
         bool network_initialized = false;
 
-        // void fill_buffer_with(char to_fill, char* buffer, unsigned long length) {
-        //     unsigned long index;
-        //     for (index= 0; index < length; index = index + 1) {
-        //         buffer[index] = to_fill;
-        //     }
-        // }
-
         void initialize_network() {
             #if defined(crap_os)
                 if (!network_initialized) {
