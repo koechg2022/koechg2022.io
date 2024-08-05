@@ -1,4 +1,5 @@
 #include "prototypes"
+#include <netdb.h>
 #include <sys/socket.h>
 
 
@@ -245,8 +246,154 @@ std::list<std::string> networking::resolve_hostname(const std::string host, cons
     return the_answer;
 }
 
-std::map<std::string, std::map<std::string, std::list<std::string> > > get_machine_adapters(bool ignore_empty) {
+std::map<std::string, std::map<std::string, std::list<std::string> > > networking::get_machine_adapters(bool ignore_empty) {
     std::map<std::string, std::map<std::string, std::list<std::string> > > the_answer;
+    bool was_init = is_init;
+    if (!was_init) {
+        if (!networking::init_namespace()) {
+            return the_answer;
+        }
+    }
+
+    // Now to get the adapters for this machine
+    ifaddr_adapter_type this_machine_adapters;
     
+    #if defined(crap_os)
+        this_machine_adapters = NULL;
+        DWORD memory_size = 20000;
+        while (!this_machine_adapters) {
+            this_machine_adapters = (ifaddr_adapter_type) malloc(memory_size);
+
+            if (!this_machine_adapters) {
+                if (clean_on_failure) {
+                    uninit_namespace();
+                }
+                return the_answer;
+            }
+
+            int response = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, 0, this_machine_adapters, &memory_size);
+            
+            if (response == ERROR_BUFFER_OVERFLOW) {
+                std::free(this_machine_adapters);
+            }
+
+            else if (response == ERROR_SUCCESS) {
+                break;
+            }
+
+            else {
+                ifaddrs_free_adapters(this_machine_adapters);
+
+                if (clean_on_failure) {
+                    uninit_namespace();
+                }
+                return the_answer;
+            }
+
+        }
+    #else
+        if (getifaddrs(&this_machine_adapters)) {
+            std::fprintf(stderr, "Error retrieving this machine's adapter information. Error %d\n", socket_error());
+            if (clean_on_failure) {
+                uninit_namespace();
+            }
+            return the_answer;
+        }
+    #endif
+
+    ifaddr_adapter_type this_adapter;
+    ifaddrs_address_type this_address;
+    
+    std::string adapter_name, address_family, address_ip;
+    socket_family_type this_family;
+    char buffer[buffer_size];
+    for (this_adapter = this_machine_adapters; this_adapter; this_adapter = ifaddrs_get_next_adapter(this_adapter)) {
+        adapter_name = ifaddrs_get_adapter_name(this_adapter);
+        for (this_address = ifaddrs_get_address_from_adapter(this_adapter); this_address; this_address = ifaddrs_get_next_address(this-address)) {
+            this_family = ifaddrs_address_family(this_address);
+            address_family = get_address_family_name(this_family);
+            // std::memset(buffer, 0, buffer_size);
+            switch (getnameinfo(ifaddrs_address_sockaddr(this_address), ifaddrs_address_sockaddrlen(this_address), buffer, buffer_size, 0, 0, NI_NUMERICHOST)) {
+                
+                // Success getting the IP address
+                case 0 : {
+                    address_ip = std::string(buffer);
+
+                    if (ignore_empty && address_ip.empty()) {
+                        continue;
+                    }
+                    else {
+
+                        // new adapter.
+                        if (the_answer.find(adapter_name) == the_answer.end()) {
+                            std::map<std::string, std::list<std::string> > new_map;
+                            std::list<std::string> new_list;
+                            new_list.push_back(address_ip);
+                            new_map.insert(std::make_pair(address_family, new_list));
+                            the_answer.insert(std::make_pair(adapter_name, new_map));
+                        }
+
+                        // adapter exists, new address family though
+                        else if (the_answer[adapter_name].find(address_family) == the_answer[adapter_name].end()) {
+                            std::list<std::string> new_list;
+                            new_list.push_back(address_ip);
+                            the_answer[adapter_name].insert(std::make_pair(address_family, new_list));
+                        }
+
+                        // adapter and address family exist. Need to add new address.
+                        else {
+                            the_answer[adapter_name][address_family].push_back(address_ip);
+                        }
+                    }
+                    
+                    break;
+                }
+            }
+
+            switch(getnameinfo(ifaddrs_address_sockaddr(this_address), ifaddrs_address_sockaddrlen(this_address), buffer, buffer_size, 0, 0, NI_NAMEREQD)) {
+
+                // Success getting the name address
+                case 0 : {
+                    address_ip = std::string(buffer);
+
+                    if (ignore_empty && address_ip.empty()) {
+                        continue;
+                    }
+
+                    else {
+                        // new adapter.
+                        if (the_answer.find(adapter_name) == the_answer.end()) {
+                            std::map<std::string, std::list<std::string> > new_map;
+                            std::list<std::string> new_list;
+                            new_list.push_back(address_ip);
+                            new_map.insert(std::make_pair(address_family, new_list));
+                            the_answer.insert(std::make_pair(adapter_name, new_map));
+                        }
+
+                        // adapter exists, new address family though
+                        else if (the_answer[adapter_name].find(address_family) == the_answer[adapter_name].end()) {
+                            std::list<std::string> new_list;
+                            new_list.push_back(address_ip);
+                            the_answer[adapter_name].insert(std::make_pair(address_family, new_list));
+                        }
+
+                        // adapter and address family exist. Need to add new address.
+                        else {
+                            the_answer[adapter_name][address_family].push_back(address_ip);
+                        }
+                    }
+                    break;
+                }
+            }
+            
+        }
+    }
+
+    ifaddrs_free_adapters(this_machine_adapters);
+
+    if (!was_init) {
+        uninit_namespace();
+    }
+
     return the_answer;
 }

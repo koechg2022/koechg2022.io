@@ -98,10 +98,10 @@
 
     // For dealing with the machine's network adapter addresses
     #define ifaddrs_address_type struct ifaddrs*
-    #define ifaddrs_get_next_address(this_address)
-    #define ifaddrs_address_sockaddr(this_address)
-    #define ifaddrs_address_sockaddrlen(this_address)
-    #define ifaddrs_address_family(this_address)
+    #define ifaddrs_get_next_address(this_address) NULL
+    #define ifaddrs_address_sockaddr(this_address) this_address->ifa_addr
+    #define ifaddrs_address_sockaddrlen(this_address) sizeof(*this_address->ifa_addr)
+    #define ifaddrs_address_family(this_address) this_address->ifa_addr->sa_family
 
 
 #else
@@ -132,10 +132,10 @@
 
     // For dealing with the machine's network adapter addresses
     #define ifaddrs_address_type PIP_ADAPTER_UNICAST_ADDRESSES
-    #define ifaddrs_get_next_address(this_address)
-    #define ifaddrs_address_sockaddr(this_address)
-    #define ifaddrs_address_sockaddrlen(this_address)
-    #define ifaddrs_address_family(this_address)
+    #define ifaddrs_get_next_address(this_address) this_address->Next
+    #define ifaddrs_address_sockaddr(this_address) this_address->Address.lpSockaddr
+    #define ifaddrs_address_sockaddrlen(this_address) this_address->Address.iSockaddrLength
+    #define ifaddrs_address_family(this_address) this_address->Address.lpSockaddr->sa_family
 
 
 #endif
