@@ -181,4 +181,28 @@ namespace networking {
     */
     std::map<std::string, std::map<std::string, std::list<std::string> > > get_machine_adapters(bool ignore_empty = true);
 
+
+    class Host {
+
+        private:
+
+            socket_type active_socket;
+            std::string host, port;
+
+        
+        
+        public:
+
+            
+            Host(const std::string hostname = "localhost", const std::string connect_port = "8080");
+
+            /**
+            * @brief a simple function to check if this Host is still connected to the corresponding client.
+            */
+            bool is_connected();
+
+
+    };
+
+
 }
