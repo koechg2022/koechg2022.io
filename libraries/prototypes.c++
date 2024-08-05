@@ -10,7 +10,7 @@ std::string misc_functions::get_current_time() {
 }
 
 
-template <typename data_> std::list<data_> set_to_list(std::set<data_> the_set) {
+template <typename data_> std::list<data_> misc_functions::set_to_list(std::set<data_> the_set) {
     std::list<data_> the_answer;
     for (typename std::set<data_>::const_iterator iter = the_set.begin(); iter != the_set.end(); iter++) {
         the_answer.push_back(*iter);
@@ -19,7 +19,7 @@ template <typename data_> std::list<data_> set_to_list(std::set<data_> the_set) 
 }
 
 
-template <typename data_> std::set<data_> list_to_set(std::list<data_> the_list) {
+template <typename data_> std::set<data_> misc_functions::list_to_set(std::list<data_> the_list) {
     std::set<data_> the_answer;
     for (typename std::list<data_>::const_iterator iter = the_list.begin(); iter != the_list.end(); iter++) {
         the_answer.push_back(*iter);
