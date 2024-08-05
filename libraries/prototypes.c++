@@ -1,14 +1,13 @@
 #include "prototypes"
 
 
-
+/**********************misc_function definitions**********************************/
 
 std::string misc_functions::get_current_time() {
     std::time_t current_time = std::time(nullptr);
     std::string the_answer = (const std::string) (std::ctime(&current_time));
     return the_answer.substr(0, the_answer.length() - 1);
 }
-
 
 template <typename data_> std::list<data_> misc_functions::set_to_list(std::set<data_> the_set) {
     std::list<data_> the_answer;
@@ -18,7 +17,6 @@ template <typename data_> std::list<data_> misc_functions::set_to_list(std::set<
     return the_answer;
 }
 
-
 template <typename data_> std::set<data_> misc_functions::list_to_set(std::list<data_> the_list) {
     std::set<data_> the_answer;
     for (typename std::list<data_>::const_iterator iter = the_list.begin(); iter != the_list.end(); iter++) {
@@ -26,6 +24,9 @@ template <typename data_> std::set<data_> misc_functions::list_to_set(std::list<
     }
     return the_answer;
 }
+
+
+/**********************string_function definitions********************************/
 
 
 unsigned long string_functions::string_length(const char *the_string, const char term) {
@@ -68,3 +69,7 @@ bool string_functions::same_string(const char *first, const char *second, bool i
     );
     return string_functions::same_char(first[index], term, ignore_case) && string_functions::same_char(second[index], term, ignore_case);
 }
+
+
+/**********************networking namespace definitions***************************/
+
