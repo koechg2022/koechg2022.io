@@ -1,0 +1,92 @@
+#include "../include/included"
+
+
+
+namespace misc_functions {
+
+    // @brief Get the current time on this machine as a std::string
+    // @returns the current time on the machine when called.
+    std::string get_current_time();
+
+    // @brief Get a list of the data in a set.
+    // @returns a new list with all the data in the set.
+    template <typename data_> std::list<data_> set_to_list(std::set<data_> the_set);
+
+    // @brief Get a set of the data in the list.
+    // @returns a set with all the data in the list.
+    template <typename data_> std::set<data_> list_to_set(std::list<data_> the_list);
+}
+
+
+namespace string_functions {
+
+    // @brief Get the length of the string passed in.
+    // @param the_string (const char*) : The string whose length is to be determined
+    // @param term (const char) : The terminating character to look for at the end of the_string. Defaults to NULL (\0)
+    // @returns the number of characters in `the_string` not including the terminating character.
+    unsigned long string_length(const char* the_string, const char term = '\0');
+
+    // @brief Convert a char to uppercase, if it is a letter that is lowercase.
+    // @param c (const char) the character to be converted into a capital case letter.
+    // @returns the capital version of `c`
+    char to_caps(const char c);
+
+
+    // @brief Convert a char to lowercase, if it is a letter that was uppercase.
+    // @param c (const char) : the character to be converted to a lower case letter.
+    // @returns the lower case version of `c`
+    char to_lower(const char c);
+
+
+    // @brief Checks if the character passed in is uppercase.
+    // @param c (const char) : the character to check it's case.
+    // @returns `true` if `c` is capital case, `false` otherwise.
+    bool is_caps(const char c);
+
+
+    // @brief Check if the character passed in is lowercase.
+    // @param c (const char) : the character to check it's case.
+    // @returns `true` if `c` is lowercase, `false` otherwise.
+    bool is_lower(const char c);
+
+
+    // @brief Check if the char passed in is a letter (lowercase or capital case)
+    // @param c (const char) : the character to check if it's a letter or not.
+    // @returns `true` if the char passed in is lowercase or uppercase, false otherwise.
+    bool is_letter(const char c);
+
+
+    // @brief Check if the char passed in is a number or not.
+    // @param c (const char) : the character to check if it's a number or not.
+    // @returns `true` if the character passed in is a number, false otherwise.
+    bool is_number(const char c);
+
+    // @brief Check if the two chars passed in, `a` and `b` are the same character or not.
+    // @param a (const char) : one of the two characters to be compared.
+    // @param b (const char) : the other of the two characters to be compared.
+    // @param ignore_case (bool) : (Defaults to true) A flag that specifies that if the characters are both 
+    // letters, case should be ignored.
+    // @returns `true` if `a` and `b` are the same character 
+    // (as depending on how `ignore_case` is defined)
+    // and `false` otherwise.
+    bool same_char(const char a, const char b, bool ignore_case = true);
+
+
+    // @brief Check if the two strings (const char*) passed 
+    // in are the same string or not and return `true` if they are,
+    // `false` if they aren't.
+    //
+    // @param first (const char*) : one of the strings to be compared.
+    // @param second (const char*) : the other of the two strings to be compared.
+    // @param ignore_case (bool) : (Defaults to true) A flag to specify whether letter cases should be ignored or not.
+    // @param term (const char) : (Defaults to NULL (\0)) The terminating character to be looked for in each string being compared.
+    // @returns `true` if `first` and `second` are the same string, `false` if they are not.
+    bool same_string(const char* first, const char* second, bool ignore_case = true, const char term = '\0');
+}
+
+namespace networking {
+    
+    
+
+
+}
