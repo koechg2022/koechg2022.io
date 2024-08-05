@@ -198,8 +198,16 @@ namespace networking {
 
             /**
             * @brief a simple function to check if this Host is still connected to the corresponding client.
+            * @returns `true` if this machine is indeed connected to a remote machine, `false` otherwise.
             */
             bool is_connected();
+
+
+            /**
+            * @brief Connect this machine to the remote machine.
+            * @returns `true` if this machine was successfully connected to the remote machine. `false` otherwise.
+            */
+            bool connect();
 
 
     };
