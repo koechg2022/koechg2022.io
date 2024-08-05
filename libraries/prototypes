@@ -8,82 +8,177 @@ namespace misc_functions {
     // @returns the current time on the machine when called.
     std::string get_current_time();
 
-    // @brief Get a list of the data in a set.
-    // @returns a new list with all the data in the set.
+
+    /**
+        @brief Get a list of the data in a set.
+        @param the_set (std::set<generic>) : The set whose data will be returned in a list.
+        @returns a new list with all the data in the set.
+    */
     template <typename data_> std::list<data_> set_to_list(std::set<data_> the_set);
 
-    // @brief Get a set of the data in the list.
-    // @returns a set with all the data in the list.
+    /**
+        @brief Get a set of the data in the list.
+        @param the_list (std::list<generic>) : The list whose data will be returned in a set.
+        @returns a set with all the data in the list.
+    */
     template <typename data_> std::set<data_> list_to_set(std::list<data_> the_list);
 }
 
 
 namespace string_functions {
 
-    // @brief Get the length of the string passed in.
-    // @param the_string (const char*) : The string whose length is to be determined
-    // @param term (const char) : The terminating character to look for at the end of the_string. Defaults to NULL (\0)
-    // @returns the number of characters in `the_string` not including the terminating character.
+    /**
+        @brief Get the length of the string passed in.
+        @param the_string (const char*) : The string whose length is to be determined
+        @param term (const char) : The terminating character to look for at the end of the_string. Defaults to NULL (\0)
+        @returns the number of characters in `the_string` not including the terminating character.
+    */
     unsigned long string_length(const char* the_string, const char term = '\0');
 
-    // @brief Convert a char to uppercase, if it is a letter that is lowercase.
-    // @param c (const char) the character to be converted into a capital case letter.
-    // @returns the capital version of `c`
+    /**
+        @brief Convert a char to uppercase, if it is a letter that is lowercase.
+        @param c (const char) the character to be converted into a capital case letter.
+        @returns the capital version of `c`
+    */
     char to_caps(const char c);
 
 
-    // @brief Convert a char to lowercase, if it is a letter that was uppercase.
-    // @param c (const char) : the character to be converted to a lower case letter.
-    // @returns the lower case version of `c`
+    /**
+        @brief Convert a char to lowercase, if it is a letter that was uppercase.
+        @param c (const char) : the character to be converted to a lower case letter.
+        @returns the lower case version of `c`
+    */
     char to_lower(const char c);
 
 
-    // @brief Checks if the character passed in is uppercase.
-    // @param c (const char) : the character to check it's case.
-    // @returns `true` if `c` is capital case, `false` otherwise.
+    /**
+        @brief Checks if the character passed in is uppercase.
+        @param c (const char) : the character to check it's case.
+        @returns `true` if `c` is capital case, `false` otherwise.
+    */
     bool is_caps(const char c);
 
 
-    // @brief Check if the character passed in is lowercase.
-    // @param c (const char) : the character to check it's case.
-    // @returns `true` if `c` is lowercase, `false` otherwise.
+    /**
+        @brief Check if the character passed in is lowercase.
+        @param c (const char) : the character to check it's case.
+        @returns `true` if `c` is lowercase, `false` otherwise.
+    */
     bool is_lower(const char c);
 
 
-    // @brief Check if the char passed in is a letter (lowercase or capital case)
-    // @param c (const char) : the character to check if it's a letter or not.
-    // @returns `true` if the char passed in is lowercase or uppercase, false otherwise.
+    /**
+        @brief Check if the char passed in is a letter (lowercase or capital case)
+        @param c (const char) : the character to check if it's a letter or not.
+        @returns `true` if the char passed in is lowercase or uppercase, false otherwise.
+    */
     bool is_letter(const char c);
 
 
-    // @brief Check if the char passed in is a number or not.
-    // @param c (const char) : the character to check if it's a number or not.
-    // @returns `true` if the character passed in is a number, false otherwise.
+    /**
+        @brief Check if the char passed in is a number or not.
+        @param c (const char) : the character to check if it's a number or not.
+        @returns `true` if the character passed in is a number, false otherwise.
+    */
     bool is_number(const char c);
 
-    // @brief Check if the two chars passed in, `a` and `b` are the same character or not.
-    // @param a (const char) : one of the two characters to be compared.
-    // @param b (const char) : the other of the two characters to be compared.
-    // @param ignore_case (bool) : (Defaults to true) A flag that specifies that if the characters are both 
-    // letters, case should be ignored.
-    // @returns `true` if `a` and `b` are the same character 
-    // (as depending on how `ignore_case` is defined)
-    // and `false` otherwise.
+    /**
+        @brief Check if the two chars passed in, `a` and `b` are the same character or not.
+        @param a (const char) : one of the two characters to be compared.
+        @param b (const char) : the other of the two characters to be compared.
+        @param ignore_case (bool) : (Defaults to true) A flag that specifies that if the characters are both 
+            letters, case should be ignored.
+        @returns `true` if `a` and `b` are the same character 
+            (as depending on how `ignore_case` is defined)
+            and `false` otherwise.
+    */
     bool same_char(const char a, const char b, bool ignore_case = true);
 
 
-    // @brief Check if the two strings (const char*) passed 
-    // in are the same string or not and return `true` if they are,
-    // `false` if they aren't.
-    //
-    // @param first (const char*) : one of the strings to be compared.
-    // @param second (const char*) : the other of the two strings to be compared.
-    // @param ignore_case (bool) : (Defaults to true) A flag to specify whether letter cases should be ignored or not.
-    // @param term (const char) : (Defaults to NULL (\0)) The terminating character to be looked for in each string being compared.
-    // @returns `true` if `first` and `second` are the same string, `false` if they are not.
+    /**
+        @brief Check if the two strings (const char*) passed 
+            in are the same string or not and return `true` if they are,
+            `false` if they aren't.
+        @param first (const char*) : one of the strings to be compared.
+        @param second (const char*) : the other of the two strings to be compared.
+        @param ignore_case (bool) : (Defaults to true) A flag to specify whether 
+            letter cases should be ignored or not.
+        @param term (const char) : (Defaults to NULL (\0)) 
+            The terminating character to be looked for in each string being compared.
+        @returns `true` if `first` and `second` are the same string, `false` if they are not.
+    */
     bool same_string(const char* first, const char* second, bool ignore_case = true, const char term = '\0');
 }
 
 namespace networking {
+
+    bool clean_on_failure;
+
+    // For namespace management
+    namespace {
+
+        // TODO : See if there's away to get rid of these
+        #if defined(mac_os)
+            const std::string rel_adapter = "en0";
+            bool is_init = true;
+        
+        #elif defined(linux_os)
+            const std::string rel_adapter = "enp08s";
+            bool is_init = true;
+        
+        #else // crap os
+            const std::string rel_adapter = "Wi-Fi 3";
+            bool is_init = false;
+        #endif
+
+
+        bool init_namespace();
+
+        bool uninit_namespace();
+
+        std::string get_address_family_name(socket_type sock_fam);
+
+    }
+
+    namespace network_families {
     
+        const std::string unspec_address = "Unrecognized Address family";
+        const std::string ip_ver4_address = "IP Version 4";
+        const std::string ip_ver6_address = "IP Version 6";
+        #if defined(unix_os)
+            #if defined(mac_os)
+                const std::string link_layer_address = "Link-layer interface address";
+            #else
+                const std::string netlink_address = "Netlink address";
+                const std::string packet_address = "Packet address";
+            #endif
+        #else
+            const std::string netbios_address = "NetBIOS address";
+            const std::string irda_address = "IrDA address";
+            const std::string bluetooth_address = "Bluetooth address";
+        #endif
+        const std::string unrecognized_address = "Unrecognized Address family";
+        
+        const std::set<std::string> get_families();
+
+    }
+
+    /**
+    * @brief Get the addresses associated with the hostname `host` passed in.
+    * @param host (const std::string) : The address whose name or IP address is to be retrieved.
+    * @param port (const std::string) : (Defaults to 8080) The port to use to retrieve the address.
+    * @returns A `std::list<std::string>` with all the addresses and names of the IP address.
+    */
+    std::list<std::string> resolve_hostname(const std::string host, const std::string port = "8080");
+
+    /**
+    * @brief Get the adapters and the corresponding addresses for that adapter.
+    * @param ignore_case (bool) : (Defaults to true) Ignore 
+    * any address families or adapters whose data is empty.
+    * @returns A `std::map<std::string, std::map<std::string, std::list<std::string> > >` 
+    * with the adapters,
+    * their address families, and the addresses for the corresponding address families.
+    */
+    std::map<std::string, std::map<std::string, std::list<std::string> > > get_machine_adapters(bool ignore_empty = true);
+
 }
