@@ -1,0 +1,5 @@
+/Users/geoffreykoech/Desktop/Personal Projects/Personal-Website/Server/build/CMakeFiles/test_server.dir
+/Users/geoffreykoech/Desktop/Personal Projects/Personal-Website/Server/build/CMakeFiles/test_server_gui.dir
+/Users/geoffreykoech/Desktop/Personal Projects/Personal-Website/Server/build/CMakeFiles/server_with_gui.dir
+/Users/geoffreykoech/Desktop/Personal Projects/Personal-Website/Server/build/CMakeFiles/edit_cache.dir
+/Users/geoffreykoech/Desktop/Personal Projects/Personal-Website/Server/build/CMakeFiles/rebuild_cache.dir

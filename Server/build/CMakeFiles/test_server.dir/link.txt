@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/test_server.dir/Server/source/test_server.c++.o -o "/Users/geoffreykoech/Desktop/Personal Projects/Personal-Website/Server/objects/test_server"   -L/usr/local/lib

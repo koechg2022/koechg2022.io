@@ -1,6 +1,4 @@
 #include "prototypes"
-#include <netdb.h>
-#include <sys/socket.h>
 
 
 /**********************misc_function definitions**********************************/
