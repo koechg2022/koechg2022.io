@@ -397,3 +397,40 @@ std::map<std::string, std::map<std::string, std::list<std::string> > > networkin
 
     return the_answer;
 }
+
+          /************Host class definitions*****************/
+
+
+bool networking::Host::socket_is_connected(socket_type this_socket) {
+    int err;
+    socklen_t err_size = sizeof(err);
+
+    if (getsockopt(this_socket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&err), &err_size)) {
+        std::fprintf(stderr, "An error has occured while running getsockopt. Error number %d\n", socket_error());
+        return false;
+    }
+
+    return err == 0;
+}
+
+
+networking::Host::Host(const std::string host, const std::string connect_port, socket_type connect_socket, long seconds_wait, int msec_wait, bool using_tcp) {
+    this->was_init = is_init;
+    
+    if (!this->was_init) {
+        networking::init_namespace();
+    }
+
+    if (host.empty()) {
+        std::map<std::string, std::map<std::string, std::list<std::string> > > adapters = networking::get_machine_adapters();
+        for (auto this_adapter = adapters.begin(); this_adapter != adapters.end(); this_adapter++) {
+            if (!string_functions::same_string(this_adapter->first.c_str(), networking::rel_adapter.c_str())) {
+                continue;
+            }
+        }
+    }
+    else {
+        this->hostname = host;
+    }
+
+}

@@ -185,32 +185,113 @@ namespace networking {
     class Host {
 
         private:
+            bool use_tcp;
 
+        protected:
+            std::string hostname, port;
+            struct timeval timeout;
+            
+            bool was_init; // to consider on close
             socket_type active_socket;
-            std::string host, port;
+            struct addrinfo* address_information;
 
-        
-        
+            /**
+            * @brief Check if the socket is connected or not to another machine.
+            * 
+            * @param this_socket (socket_type) The socket to be checked
+            * to see if it is currently connected or not.
+            *
+            * @returns `true` if the socket is indeed connected to another machine
+            * `false` otherwise.
+            **/
+            bool socket_is_connected(socket_type this_socket = invalid_socket);
+
         public:
 
+            Host(const std::string host, const std::string connect_port = "8080", socket_type connect_socket = invalid_socket, long seconds_wait = 0, int msec_wait = 100000, bool using_tcp = true);
+
+            ~Host();
+
+            /**
+            *
+            * @note This is only really useful on windows machines. It doesn't affect anything
+            * on unix machines.
+            *
+            * @brief Update the host so that it will uninitialize the runtime's network 
+            * capability (only does something on windows machines cause windows is crap)
+            * 
+            * @param on_close (bool) The flag which is used to specify whether or not to
+            * keep the network initialized.
+            */
+            void keep_init(bool on_close);
+
+
+            /**
+            * @note Only relevant on windows machines.
+            *
+            * @brief See if the program will uninitialize the runtime's
+            * network (only shows useful information on windows machines cause windows is crap)
+            *
+            * @returns `true` if network will be uninitialized, `false` if the network will remain initialized.
+            *
+            */
+            bool keep_init();
+
+
+            /**
+            * @brief Get the hostname of the connected host.
+            *
+            * @returns the hostname of the connected machine.
+            */
+            std::string get_hostname() const;
+
+            /**
+            * @brief Get the port that this metal is 
+            * using to connect to the remote host.
+            *
+            * @returns the port that this metal 
+            * is using to connect to a remote host.
+            */
+            std::string get_service_port() const;
+
             
-            Host(const std::string hostname = "localhost", const std::string connect_port = "8080");
+            /**
+            *
+            * @brief Retrieve the address information for 
+            * the remote host.
+            * @returns `true` if the information is successfully retrieved.
+            * `false` otherwise.
+            *
+            * @note If false is returned, check the error number to see what the error was.
+            *
+            */
+            bool retrieve_address_information();
+
+            
+            /**
+            *
+            * @brief create the socket that this host will use.
+            *
+            * @returns `true` if the socket the host will use was successfuly
+            * created, `false` otherwise.
+            *
+            */
+            bool activate_socket();
+
 
             /**
-            * @brief a simple function to check if this Host is still connected to the corresponding client.
-            * @returns `true` if this machine is indeed connected to a remote machine, `false` otherwise.
+            * 
+            * @brief Change the timeout that this host will use whenever using blocking
+            * functionality.
+            *
+            * @param sec (long) the number of seconds.
+            *
+            * @param micro_sec (int) the microseconds.
+            * 
             */
-            bool is_connected();
-
-
-            /**
-            * @brief Connect this machine to the remote machine.
-            * @returns `true` if this machine was successfully connected to the remote machine. `false` otherwise.
-            */
-            bool connect();
+            void update_timeout(long sec, int micro_sec);
 
 
     };
-
 
 }
