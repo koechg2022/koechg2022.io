@@ -1,2 +1,3 @@
 Server/build
 Server/objects/*
+Server/.cache
