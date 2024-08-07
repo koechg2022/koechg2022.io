@@ -1,2 +1,2 @@
-Server/objects/tests
-Server/objects/tests.exe
+Server/build
+Server/objects/*
