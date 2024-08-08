@@ -31,9 +31,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Server/objects)
 
 
 # Add executable targets
-add_executable(test_server ${PROJECT_SOURCE_DIR}/Server/source/test_server.c++)
-add_executable(test_server_gui ${PROJECT_SOURCE_DIR}/Server/source/test_server_gui.c++)
-add_executable(server_with_gui ${PROJECT_SOURCE_DIR}/Server/source/server_with_gui.c++)
+add_executable(test_server ${CMAKE_SOURCE_DIR}/Server/source/test_server.c++)
+add_executable(test_server_gui ${CMAKE_SOURCE_DIR}/Server/source/test_server_gui.c++)
+add_executable(server_with_gui ${CMAKE_SOURCE_DIR}/Server/source/server_with_gui.c++)
 
 
 

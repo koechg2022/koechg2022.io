@@ -1,4 +1,5 @@
 #include "prototypes"
+#include <netdb.h>
 
 
 /**********************misc_function definitions**********************************/
@@ -396,10 +397,21 @@ std::map<std::string, std::map<std::string, std::list<std::string> > > networkin
     return the_answer;
 }
 
-          /************Host class definitions*****************/
+          /**helpful structs (server & client) definitions****/
+
+bool networking::network_structures::client::operator<(const struct client& other_client) {
+    return std::memcmp(&this->client_address, &other_client.client_address, sizeof(other_client));
+}
+
+bool networking::network_structures::server::operator<(const struct server& other_server) {
+    return std::memcmp(&this->server_info, &other_server.server_info, sizeof(other_server));
+}
 
 
-bool networking::Host::socket_is_connected(socket_type this_socket) {
+          /************host class definitions*****************/
+
+
+bool networking::network_structures::host::socket_is_connected(socket_type this_socket) {
     int err;
     socklen_t err_size = sizeof(err);
 
@@ -412,7 +424,7 @@ bool networking::Host::socket_is_connected(socket_type this_socket) {
 }
 
 
-networking::Host::Host(const std::string host, const std::string connect_port, socket_type connect_socket, long seconds_wait, int msec_wait, bool using_tcp) {
+networking::network_structures::host::host(const std::string host, const std::string connect_port, socket_type connect_socket, long seconds_wait, int msec_wait, bool using_tcp) {
     this->was_init = is_init;
     
     if (!this->was_init) {
@@ -420,15 +432,365 @@ networking::Host::Host(const std::string host, const std::string connect_port, s
     }
 
     if (host.empty()) {
+        this->hostname = "";
         std::map<std::string, std::map<std::string, std::list<std::string> > > adapters = networking::get_machine_adapters();
-        for (auto this_adapter = adapters.begin(); this_adapter != adapters.end(); this_adapter++) {
+        for (std::map<std::string, std::map<std::string, std::list<std::string> > >::const_iterator this_adapter = adapters.begin(); this_adapter != adapters.end(); this_adapter = this_adapter++) {
             if (!string_functions::same_string(this_adapter->first.c_str(), networking::rel_adapter.c_str())) {
                 continue;
+            }
+            for (std::map<std::string, std::list<std::string> >::const_iterator this_family = this_adapter->second.begin(); this_family != this_adapter->second.end(); this_family++) {
+                if (string_functions::same_string(this_family->first.c_str(), network_families::ip_ver4_address.c_str()) || 
+                string_functions::same_string(this_family->first.c_str(), network_families::ip_ver6_address.c_str())) {
+                    this->hostname = this_family->first;
+                    break;
+                }
+            }
+            if (!this->hostname.empty()) {
+                break;
             }
         }
     }
     else {
         this->hostname = host;
     }
-
+    this->port = connect_port;
+    this->active_socket = connect_socket;
+    this->address_information = NULL;
+    this->timeout = (struct timeval) {seconds_wait, msec_wait};
+    this->use_tcp = using_tcp;
 }
+
+networking::network_structures::host::~host() {
+    if (this->address_information) {
+        freeaddrinfo(this->address_information);
+    }
+    if (valid_socket(this->active_socket)) {
+        close_socket(this->active_socket);
+    }
+    if (!was_init) {
+        networking::uninit_namespace();
+    }
+}
+
+bool networking::network_structures::host::keep_init() {
+    return !this->was_init;
+}
+
+void networking::network_structures::host::keep_init(bool on_close) {
+    this->was_init = on_close;
+}
+
+std::string networking::network_structures::host::get_hostname() const {
+    return this->hostname;
+}
+
+std::string networking::network_structures::host::get_service_port() const {
+    return this->port;
+}
+
+bool networking::network_structures::host::retrieve_address_information() {
+    if (!this->address_information) {
+        struct addrinfo hints;
+        std::memset(&hints, 0, sizeof(hints));
+        hints.ai_socktype = (this->use_tcp) ? SOCK_STREAM : SOCK_DGRAM;
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_flags = 0;
+        
+        if (getaddrinfo((this->hostname.length() > 0) ? this->hostname.c_str() : 0, (this->port.length() > 0) ? this->port.c_str() : 0, &hints, &this->address_information)) {
+            std::fprintf(stderr, "Failed to retrieve address information for \"%s\"\n", this->hostname.c_str());
+            this->address_information = NULL;
+            return this->address_information;
+        }
+        
+        if (this->hostname.empty() || this->port.empty()) {
+            char buffer_host[buffer_size], buffer_port[buffer_size];
+            std::memset(buffer_host, 0, buffer_size);
+            std::memset(buffer_port, 0, buffer_size);
+
+            // Try getting the host and, or port as a numeric address
+            if (getnameinfo(this->address_information->ai_addr, this->address_information->ai_addrlen, 
+            (this->hostname.length()) ? buffer_host : 0, (this->hostname.length()) ? buffer_size : 0,
+            (this->port.length() > 0) ? buffer_port : 0, (this->port.length() > 0) ? buffer_size : 0, NI_NUMERICHOST)) {
+                if (this->hostname.empty() && !string_functions::same_char(buffer_host[0], 0, false)) {
+                    this->hostname = std::string(buffer_host);
+                }
+                if (this->port.empty() && !string_functions::same_char(buffer_port[0], 0, false)) {
+                    this->port = std::string(buffer_port);
+                }
+            }
+
+
+            std::memset(buffer_host, 0, buffer_size);
+            std::memset(buffer_port, 0, buffer_size);
+
+            // Try getting the host and or the port as a name (`example.com` for instance)
+            if (getnameinfo(this->address_information->ai_addr, this->address_information->ai_addrlen, 
+            (this->hostname.length()) ? buffer_host : 0, (this->hostname.length()) ? buffer_size : 0,
+            (this->port.length() > 0) ? buffer_port : 0, (this->port.length() > 0) ? buffer_size : 0, NI_NAMEREQD)) {
+                if (this->hostname.empty() && !string_functions::same_char(buffer_host[0], 0, false)) {
+                    this->hostname = std::string(buffer_host);
+                }
+                if (this->port.empty() && !string_functions::same_char(buffer_port[0], 0, false)) {
+                    this->port = std::string(buffer_port);
+                }
+            }
+
+
+        }
+
+    }
+    return this->address_information;
+}
+
+bool networking::network_structures::host::activate_socket() {
+    if (this->address_information) {
+        std::fprintf(stderr, "Cannot activate socket. No address information is known. Use host's retrieve_address_information to retrieve address information.\n");
+        return false;
+    }
+    this->active_socket = socket(this->address_information->ai_family, this->address_information->ai_socktype, this->address_information->ai_protocol);
+    return valid_socket(this->active_socket);
+}
+
+bool networking::network_structures::tcp_server::socket_is_bound(socket_type this_socket) {
+    struct sockaddr_storage check;
+    socklen_t check_size = sizeof(check);
+    this_socket = (this_socket == 0) ? this->active_socket : this_socket;
+    return !(getsockname(this->active_socket, (struct sockaddr*) &check, &check_size));
+}
+
+networking::network_structures::tcp_server::tcp_server(const std::string host, const std::string port, int listen_lim, long seconds_wait, int micro_sec_wait) : networking::network_structures::host(host, port, invalid_socket, seconds_wait, micro_sec_wait, true) {
+    this->listen_limit = listen_lim;
+    this->listening = false;
+    this->max_socket = invalid_socket;
+}
+
+networking::network_structures::tcp_server::~tcp_server() {
+    for (std::map<socket_type, client>::iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        close_socket(this_client->first);
+    }
+    this->listening = false;
+}
+
+bool networking::network_structures::tcp_server::server_is_listening() const {
+    return this->listening;
+}
+
+bool networking::network_structures::tcp_server::bind_socket() {
+    if (!this->address_information) {
+        std::fprintf(stderr, "Missing server's address information. Use tcp::retrieve_address_information() to get address info.\n");
+        return false;
+    }
+    if (!valid_socket(this->active_socket)) {
+        std::fprintf(stderr, "This server's active socket is invalid. Use tcp::activate_socket() to overcome this.\n");
+        return false;
+    }
+
+    if (bind(this->active_socket, this->address_information->ai_addr, this->address_information->ai_addrlen)) {
+        std::fprintf(stderr, "Failed to bind the active socket to a local address. Error %d\n", socket_error());
+        return false;
+    }
+    return true;
+}
+
+bool networking::network_structures::tcp_server::start_listening() {
+    if (!this->address_information) {
+        std::fprintf(stderr, "Missing server's address information. Use tcp::retrieve_address_information() to get address info.\n");
+        return false;
+    }
+    if (!valid_socket(this->active_socket)) {
+        std::fprintf(stderr, "This server's active socket is invalid. Use tcp::activate_socket() to get a valid socket.\n");
+        return false;
+    }
+    if (!this->socket_is_bound(this->active_socket)) {
+        std::fprintf(stderr, "The socket is not bound. Use tcp_server::bind_socket() to bind the socket.\n");
+        return false;
+    }
+    if (listen(this->active_socket, this->listen_limit)) {
+        std::fprintf(stderr, "Failed to start listening. Error number %d.\n", socket_error());
+        return false;
+    }
+    return true;
+}
+
+std::set<socket_type> networking::network_structures::tcp_server::ready_client_sockets(){
+    std::set<socket_type> the_answer, to_remove;
+    this->max_socket = invalid_socket;
+    fd_set the_reads;
+    FD_ZERO(&the_reads);
+    
+    for (std::map<socket_type, client>::const_iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        if (!this->socket_is_connected(this_client->first)) {
+            to_remove.insert(this_client->first);
+            continue;
+        }
+        FD_SET(this_client->first, &the_reads);
+        if (this_client->first > this->max_socket) {
+            this->max_socket = this_client->first;
+        }
+    }
+
+    for (std::set<socket_type>::const_iterator this_client = to_remove.begin(); this_client != to_remove.end(); this_client++) {
+        close_socket(*this_client);
+        this->clients.erase(*this_client);
+    }
+    if (this->max_socket != invalid_socket) {
+        if (select(this->max_socket + 1, &the_reads, 0, 0, &this->timeout) < 0) {
+            std::fprintf(stderr, "There was an error that occured while using the select function to retrieve the addresses of the clients that are ready with data. Error %d\n", socket_error());
+            return the_answer;
+        }
+    }
+    for (std::map<socket_type, client>::const_iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        if (FD_ISSET(this_client->first, &the_reads)) {
+            the_answer.insert(this_client->first);
+        }
+    }
+
+    return the_answer;
+}
+
+std::map<socket_type, networking::network_structures::client> networking::network_structures::tcp_server::ready_clients() {
+    std::map<socket_type, client> the_answer;
+    std::set<socket_type> to_remove;
+    this->max_socket = invalid_socket;
+    fd_set the_reads;
+    FD_ZERO(&the_reads);
+
+    for (std::map<socket_type, client>::const_iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        if (!this->socket_is_connected(this_client->first)) {
+            to_remove.insert(this_client->first);
+            continue;
+        }
+        FD_SET(this_client->first, &the_reads);
+        if (this_client->first > this->max_socket) {
+            this->max_socket = this_client->first;
+        }
+    }
+
+    for (std::set<socket_type>::const_iterator this_socket = to_remove.begin(); this_socket != to_remove.end(); this_socket++) {
+        close_socket(*this_socket);
+        this->clients.erase(*this_socket);
+    }
+    if (this->max_socket != invalid_socket) {
+        if (select(this->max_socket + 1, &the_reads, 0, 0, &this->timeout) < 0) {
+            std::fprintf(stderr, "There was an error that occured while using the select function to retrieve addresses of the clients that are ready with data. Error %d\n", socket_error());
+            return the_answer;
+        }
+    }
+    for (std::map<socket_type, client>::const_iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        if (FD_ISSET(this_client->first, &the_reads)) {
+            the_answer.insert(std::make_pair(this_client->first, this_client->second));
+        }
+    }
+    return the_answer;
+}
+
+std::map<socket_type, networking::network_structures::client> networking::network_structures::tcp_server::my_clients() const {
+    return this->clients;
+}
+
+bool networking::network_structures::tcp_server::close_server() {
+    bool the_answer = true;
+    std::set<socket_type> to_pop;
+    for (std::map<socket_type, client>::const_iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        if (close_socket(this_client->first)) {
+            #if defined(crap_os)
+                std::fprintf(stderr, "Failed to close socket %llu\n", this_client->first);
+            #else
+                std::fprintf(stderr, "Failed to close socket %d\n", this_client->first);
+            #endif
+            the_answer = false;
+        }
+    }
+
+    for (std::set<socket_type>::const_iterator this_client = to_pop.begin(); this_client != to_pop.end(); this_client++) {
+        this->clients.erase(*this_client);
+    }
+    
+    if (the_answer) {
+        close_socket(this->active_socket);
+        this->listening = false;
+    }
+
+    return the_answer;
+}
+
+
+bool networking::network_structures::tcp_server::accept_new_connection() {
+    if (!this->address_information) {
+        std::fprintf(stderr, "Missing server's address information. Use tcp::retrieve_address_information() to get address info.\n");
+        return false;
+    }
+    if (!valid_socket(this->active_socket)) {
+        std::fprintf(stderr, "This server's active socket is invalid. Use tcp::activate_socket() to get a valid socket.\n");
+        return false;
+    }
+    if (!this->socket_is_bound(this->active_socket)) {
+        std::fprintf(stderr, "The socket is not bound. Use tcp_server::bind_socket() to bind the socket.\n");
+        return false;
+    }
+    if (!this->listening) {
+        std::fprintf(stderr, "This server is not listening. Use tcp_server::start_listening to get the server to start listening.\n");
+        return false;
+    }
+    fd_set reads;
+    FD_ZERO(&reads);
+    FD_SET(this->active_socket, &reads);
+    if (select(this->active_socket + 1, &reads, 0, 0, &this->timeout) < 0) {
+        std::fprintf(stderr, "An error occured while trying to check if there is incoming data on the actively listening socket. Error %d\n", socket_error());
+        return false;
+    }
+    unsigned long old_size = this->clients.size();
+    if (FD_ISSET(this->active_socket, &reads)) {
+        struct sockaddr_storage new_client;
+        socklen_t client_size = sizeof(new_client);
+        socket_type new_socket = accept(this->active_socket, (struct sockaddr*) &new_client, &client_size);
+        if (!valid_socket(new_socket)) {
+            std::fprintf(stderr, "Error accepting new connection. Socket error %d\n", socket_error());
+            return false;
+        }
+        char address[buffer_size], the_port[buffer_size];
+        std::memset(address, 0, buffer_size);
+        std::memset(the_port, 0, buffer_size);
+        if (getnameinfo((struct sockaddr*) &new_client, sizeof(new_client), address, buffer_size, the_port, buffer_size, NI_NUMERICHOST)) {
+            std::fprintf(stderr, "Failed to retrieve addressname and/or address port. Error %d\n", socket_error());
+            return false;
+        }
+        client new_connection = {new_client, std::string(address), std::string(the_port)};
+        this->clients.insert(std::make_pair(new_socket, new_connection));
+    }
+    return this->clients.size() > old_size;
+}
+
+
+bool networking::network_structures::tcp_server::close_connection(socket_type socket_to_close, const std::string host_name) {
+    socket_type to_remove_socket = invalid_socket;
+    
+    for (std::map<socket_type, client>::const_iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
+        if (valid_socket(socket_to_close) && !host_name.empty()) {
+            if (this_client->first == socket_to_close && string_functions::same_string(this_client->second.host.c_str(), host_name.c_str())) {
+                to_remove_socket = this_client->first;
+                break;
+            }
+        }
+        else if (valid_socket(socket_to_close) && host_name.empty()) {
+            if (this_client->first == socket_to_close) {
+                to_remove_socket = this_client->first;
+                break;
+            }
+        }
+        else if (!valid_socket(socket_to_close) && !host_name.empty()) {
+            if (string_functions::same_string(host_name.c_str(), this_client->second.host.c_str())) {
+                to_remove_socket = this_client->first;
+                break;
+            }
+        }
+    }
+    if (valid_socket(to_remove_socket)) {
+        this->clients.erase(to_remove_socket);
+        close_socket(to_remove_socket);
+        return true;
+    }
+    return false;
+}
+
+

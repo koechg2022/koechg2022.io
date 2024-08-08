@@ -1,4 +1,5 @@
 #include "../include/included"
+#include <sys/socket.h>
 
 
 
@@ -138,6 +139,8 @@ namespace networking {
 
         std::string get_address_family_name(socket_type sock_fam);
 
+
+
     }
 
     namespace network_families {
@@ -181,117 +184,219 @@ namespace networking {
     */
     std::map<std::string, std::map<std::string, std::list<std::string> > > get_machine_adapters(bool ignore_empty = true);
 
+    namespace network_structures {
 
-    class Host {
 
-        private:
-            bool use_tcp;
+        typedef struct client {
+            struct sockaddr_storage client_address;
+            std::string host, port;
+            bool operator<(const struct client& other_client);
+        } client;
 
-        protected:
-            std::string hostname, port;
-            struct timeval timeout;
+
+        typedef struct server {
+            struct addrinfo server_info;
+            std::string host, port;
+            bool operator<(const struct server& other_server);
+        } server;
+
+
+        class host {
+
+            private:
+                bool use_tcp;
+
+            protected:
+                std::string hostname, port;
+                struct timeval timeout;
+                
+                bool was_init; // to consider on close
+                socket_type active_socket;
+                struct addrinfo* address_information;
+
+                /**
+                * @brief Check if the socket is connected or not to another machine.
+                * 
+                * @param this_socket (socket_type) The socket to be checked
+                * to see if it is currently connected or not.
+                *
+                * @returns `true` if the socket is indeed connected to another machine
+                * `false` otherwise.
+                **/
+                bool socket_is_connected(socket_type this_socket = invalid_socket);
+
+            public:
+
+                host(const std::string host, const std::string connect_port = "8080", socket_type connect_socket = invalid_socket, long seconds_wait = 0, int msec_wait = 100000, bool using_tcp = true);
+
+                ~host();
+
+                /**
+                *
+                * @note This is only really useful on windows machines. It doesn't affect anything
+                * on unix machines.
+                *
+                * @brief Update the host so that it will uninitialize the runtime's network 
+                * capability (only does something on windows machines cause windows is crap)
+                * 
+                * @param on_close (bool) The flag which is used to specify whether or not to
+                * keep the network initialized.
+                */
+                void keep_init(bool on_close);
+
+
+                /**
+                * @note Only relevant on windows machines.
+                *
+                * @brief See if the program will uninitialize the runtime's
+                * network (only shows useful information on windows machines cause windows is crap)
+                *
+                * @returns `true` if network will be uninitialized, `false` if the network will remain initialized.
+                *
+                */
+                bool keep_init();
+
+
+                /**
+                * @brief Get the hostname of the connected host.
+                *
+                * @returns the hostname of the connected machine.
+                */
+                std::string get_hostname() const;
+
+                /**
+                * @brief Get the port that this metal is 
+                * using to connect to the remote host.
+                *
+                * @returns the port that this metal 
+                * is using to connect to a remote host.
+                */
+                std::string get_service_port() const;
+
+                
+                /**
+                *
+                * @brief Retrieve the address information for 
+                * the remote host.
+                * @returns `true` if the information is successfully retrieved.
+                * `false` otherwise.
+                *
+                * @note If false is returned, check the error number to see what the error was.
+                *
+                */
+                bool retrieve_address_information();
+
+                
+                /**
+                *
+                * @brief create the socket that this host will use.
+                *
+                * @returns `true` if the socket the host will use was successfuly
+                * created, `false` otherwise.
+                *
+                */
+                bool activate_socket();
+
+
+                /**
+                * 
+                * @brief Change the timeout that this host will use whenever using blocking
+                * functionality.
+                *
+                * @param sec (long) the number of seconds.
+                *
+                * @param micro_sec (int) the microseconds.
+                * 
+                */
+                void update_timeout(long sec, int micro_sec);
+
+
+        };
+
+
+        class tcp_server : public host {
             
-            bool was_init; // to consider on close
-            socket_type active_socket;
-            struct addrinfo* address_information;
 
-            /**
-            * @brief Check if the socket is connected or not to another machine.
-            * 
-            * @param this_socket (socket_type) The socket to be checked
-            * to see if it is currently connected or not.
-            *
-            * @returns `true` if the socket is indeed connected to another machine
-            * `false` otherwise.
-            **/
-            bool socket_is_connected(socket_type this_socket = invalid_socket);
+            private:
+                int listen_limit;
+                bool listening;
+                socket_type max_socket;
+                std::map<socket_type, client> clients;
 
-        public:
-
-            Host(const std::string host, const std::string connect_port = "8080", socket_type connect_socket = invalid_socket, long seconds_wait = 0, int msec_wait = 100000, bool using_tcp = true);
-
-            ~Host();
-
-            /**
-            *
-            * @note This is only really useful on windows machines. It doesn't affect anything
-            * on unix machines.
-            *
-            * @brief Update the host so that it will uninitialize the runtime's network 
-            * capability (only does something on windows machines cause windows is crap)
-            * 
-            * @param on_close (bool) The flag which is used to specify whether or not to
-            * keep the network initialized.
-            */
-            void keep_init(bool on_close);
+                bool socket_is_bound(socket_type this_socket = 0);
 
 
-            /**
-            * @note Only relevant on windows machines.
-            *
-            * @brief See if the program will uninitialize the runtime's
-            * network (only shows useful information on windows machines cause windows is crap)
-            *
-            * @returns `true` if network will be uninitialized, `false` if the network will remain initialized.
-            *
-            */
-            bool keep_init();
+            public:
+
+                tcp_server(const std::string host = "", const std::string port = "8080", int listen_lim = 10, long seconds_wait = 0, int micro_sec_wait = 100000);
 
 
-            /**
-            * @brief Get the hostname of the connected host.
-            *
-            * @returns the hostname of the connected machine.
-            */
-            std::string get_hostname() const;
-
-            /**
-            * @brief Get the port that this metal is 
-            * using to connect to the remote host.
-            *
-            * @returns the port that this metal 
-            * is using to connect to a remote host.
-            */
-            std::string get_service_port() const;
-
-            
-            /**
-            *
-            * @brief Retrieve the address information for 
-            * the remote host.
-            * @returns `true` if the information is successfully retrieved.
-            * `false` otherwise.
-            *
-            * @note If false is returned, check the error number to see what the error was.
-            *
-            */
-            bool retrieve_address_information();
-
-            
-            /**
-            *
-            * @brief create the socket that this host will use.
-            *
-            * @returns `true` if the socket the host will use was successfuly
-            * created, `false` otherwise.
-            *
-            */
-            bool activate_socket();
+                ~tcp_server();
 
 
-            /**
-            * 
-            * @brief Change the timeout that this host will use whenever using blocking
-            * functionality.
-            *
-            * @param sec (long) the number of seconds.
-            *
-            * @param micro_sec (int) the microseconds.
-            * 
-            */
-            void update_timeout(long sec, int micro_sec);
+                bool server_is_listening() const;
 
 
-    };
+                bool bind_socket();
+
+                
+                bool start_listening();
+
+
+                std::set<socket_type> ready_client_sockets();
+
+
+                std::map<socket_type, client> ready_clients();
+
+
+                std::map<socket_type, client> my_clients() const;
+
+
+                bool close_server();
+
+
+                bool accept_new_connection();
+
+
+                bool close_connection(socket_type socket_to_close, const std::string host_name = "");
+
+
+        };
+
+
+        class tcp_client : public host {
+
+            private:
+                bool connected;
+
+            public:
+
+                tcp_client(const std::string remote_host, const std::string connect_port = "8080", long seconds_wait = 0, int micro_sec_wait = 100000);
+
+
+                ~tcp_client();
+
+
+                bool connect_client();
+
+
+                bool is_connected();
+
+
+                bool disconnect_client();
+
+
+                bool has_new_message();
+
+
+                socket_type get_connection_socket() const;
+
+                
+                server get_connected_server() const;
+
+        };
+    
+    
+    }
 
 }
