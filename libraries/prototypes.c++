@@ -245,6 +245,7 @@ std::list<std::string> networking::resolve_hostname(const std::string host, cons
     return the_answer;
 }
 
+
 std::map<std::string, std::map<std::string, std::list<std::string> > > networking::get_machine_adapters(bool ignore_empty) {
     std::map<std::string, std::map<std::string, std::list<std::string> > > the_answer;
     bool was_init = is_init;
@@ -460,6 +461,7 @@ networking::network_structures::host::host(const std::string host, const std::st
     this->use_tcp = using_tcp;
 }
 
+
 networking::network_structures::host::~host() {
     if (this->address_information) {
         freeaddrinfo(this->address_information);
@@ -472,21 +474,26 @@ networking::network_structures::host::~host() {
     }
 }
 
+
 bool networking::network_structures::host::keep_init() {
     return !this->was_init;
 }
+
 
 void networking::network_structures::host::keep_init(bool on_close) {
     this->was_init = on_close;
 }
 
+
 std::string networking::network_structures::host::get_hostname() const {
     return this->hostname;
 }
 
+
 std::string networking::network_structures::host::get_service_port() const {
     return this->port;
 }
+
 
 bool networking::network_structures::host::retrieve_address_information() {
     if (!this->address_information) {
@@ -542,6 +549,7 @@ bool networking::network_structures::host::retrieve_address_information() {
     return this->address_information;
 }
 
+
 bool networking::network_structures::host::activate_socket() {
     if (this->address_information) {
         std::fprintf(stderr, "Cannot activate socket. No address information is known. Use host's retrieve_address_information to retrieve address information.\n");
@@ -551,6 +559,7 @@ bool networking::network_structures::host::activate_socket() {
     return valid_socket(this->active_socket);
 }
 
+
 bool networking::network_structures::tcp_server::socket_is_bound(socket_type this_socket) {
     struct sockaddr_storage check;
     socklen_t check_size = sizeof(check);
@@ -558,11 +567,13 @@ bool networking::network_structures::tcp_server::socket_is_bound(socket_type thi
     return !(getsockname(this->active_socket, (struct sockaddr*) &check, &check_size));
 }
 
+
 networking::network_structures::tcp_server::tcp_server(const std::string host, const std::string port, int listen_lim, long seconds_wait, int micro_sec_wait) : networking::network_structures::host(host, port, invalid_socket, seconds_wait, micro_sec_wait, true) {
     this->listen_limit = listen_lim;
     this->listening = false;
     this->max_socket = invalid_socket;
 }
+
 
 networking::network_structures::tcp_server::~tcp_server() {
     for (std::map<socket_type, client>::iterator this_client = this->clients.begin(); this_client != this->clients.end(); this_client++) {
@@ -571,9 +582,11 @@ networking::network_structures::tcp_server::~tcp_server() {
     this->listening = false;
 }
 
+
 bool networking::network_structures::tcp_server::server_is_listening() const {
     return this->listening;
 }
+
 
 bool networking::network_structures::tcp_server::bind_socket() {
     if (!this->address_information) {
@@ -591,6 +604,7 @@ bool networking::network_structures::tcp_server::bind_socket() {
     }
     return true;
 }
+
 
 bool networking::network_structures::tcp_server::start_listening() {
     if (!this->address_information) {
@@ -611,6 +625,7 @@ bool networking::network_structures::tcp_server::start_listening() {
     }
     return true;
 }
+
 
 std::set<socket_type> networking::network_structures::tcp_server::ready_client_sockets(){
     std::set<socket_type> the_answer, to_remove;
@@ -648,6 +663,7 @@ std::set<socket_type> networking::network_structures::tcp_server::ready_client_s
     return the_answer;
 }
 
+
 std::map<socket_type, networking::network_structures::client> networking::network_structures::tcp_server::ready_clients() {
     std::map<socket_type, client> the_answer;
     std::set<socket_type> to_remove;
@@ -683,6 +699,7 @@ std::map<socket_type, networking::network_structures::client> networking::networ
     }
     return the_answer;
 }
+
 
 std::map<socket_type, networking::network_structures::client> networking::network_structures::tcp_server::my_clients() const {
     return this->clients;
