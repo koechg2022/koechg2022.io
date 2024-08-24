@@ -71,6 +71,21 @@ bool string_functions::same_string(const char *first, const char *second, bool i
     return string_functions::same_char(first[index], term, ignore_case) && string_functions::same_char(second[index], term, ignore_case);
 }
 
+std::string string_functions::get_keyboard_input(const std::string prompt) {
+    char addr[one_kilo_byte];
+    std::string the_answer;
+    if (prompt.length() > 0) {
+        std::printf("%s", prompt.c_str());
+    }
+    if (!std::fgets(addr, one_kilo_byte, stdin)) {
+        std::fprintf(stderr, "Failed to retrieve keyboard input.\n");
+        return "";
+    }
+    std::printf("\n");
+    the_answer = std::string(addr);
+    the_answer = (same_char(the_answer[the_answer.length() - 1], '\n')) ? the_answer.substr(0, the_answer.length() - 1) : the_answer;
+    return the_answer;
+}
 
 /**********************networking namespace definitions***************************/
 
@@ -732,50 +747,51 @@ bool networking::network_structures::tcp_server::close_server() {
 }
 
 
-bool networking::network_structures::tcp_server::accept_new_connection() {
+socket_type networking::network_structures::tcp_server::accept_new_connection() {
     if (!this->address_information) {
         std::fprintf(stderr, "Missing server's address information. Use tcp::retrieve_address_information() to get address info.\n");
-        return false;
+        return invalid_socket;
     }
     if (!valid_socket(this->active_socket)) {
         std::fprintf(stderr, "This server's active socket is invalid. Use tcp::activate_socket() to get a valid socket.\n");
-        return false;
+        return invalid_socket;
     }
     if (!this->socket_is_bound(this->active_socket)) {
         std::fprintf(stderr, "The socket is not bound. Use tcp_server::bind_socket() to bind the socket.\n");
-        return false;
+        return invalid_socket;
     }
     if (!this->listening) {
         std::fprintf(stderr, "This server is not listening. Use tcp_server::start_listening to get the server to start listening.\n");
-        return false;
+        return invalid_socket;
     }
     fd_set reads;
     FD_ZERO(&reads);
     FD_SET(this->active_socket, &reads);
     if (select(this->active_socket + 1, &reads, 0, 0, &this->timeout) < 0) {
         std::fprintf(stderr, "An error occured while trying to check if there is incoming data on the actively listening socket. Error %d\n", socket_error());
-        return false;
+        return invalid_socket;
     }
-    unsigned long old_size = this->clients.size();
+    socket_type the_answer = invalid_socket;
     if (FD_ISSET(this->active_socket, &reads)) {
         struct sockaddr_storage new_client;
         socklen_t client_size = sizeof(new_client);
         socket_type new_socket = accept(this->active_socket, (struct sockaddr*) &new_client, &client_size);
         if (!valid_socket(new_socket)) {
             std::fprintf(stderr, "Error accepting new connection. Socket error %d\n", socket_error());
-            return false;
+            return the_answer;
         }
         char address[buffer_size], the_port[buffer_size];
         std::memset(address, 0, buffer_size);
         std::memset(the_port, 0, buffer_size);
         if (getnameinfo((struct sockaddr*) &new_client, sizeof(new_client), address, buffer_size, the_port, buffer_size, NI_NUMERICHOST)) {
             std::fprintf(stderr, "Failed to retrieve addressname and/or address port. Error %d\n", socket_error());
-            return false;
+            return the_answer;
         }
         client new_connection = {new_client, std::string(address), std::string(the_port)};
         this->clients.insert(std::make_pair(new_socket, new_connection));
+        the_answer = new_socket;
     }
-    return this->clients.size() > old_size;
+    return the_answer;
 }
 
 
