@@ -1,71 +1,118 @@
 
 
 
-/*
-    How to use linear-gradient()
+* {
+    box-sizing : border-box;
+}
 
-
-    A gradient tilted 45 degrees,
-    starting blue and finishing red
-linear-gradient(45deg, blue, red)
-
-    A gradient going from the bottom right to the top left corner,
-    starting blue and finishing red
-linear-gradient(to left top, blue, red)
-
-    Interpolation in rectangular color space
-linear-gradient(in oklab, blue, red)
-
-    Interpolation in polar color space
-linear-gradient(in hsl, blue, red)
-
-    Interpolation in polar color space
-    with longer hue interpolation method
-linear-gradient(in hsl longer hue, blue, red)
-
-    Color stop: A gradient going from the bottom to top,
-    starting blue, turning green at 40% of its length,
-    and finishing red
-linear-gradient(0deg, blue, green 40%, red)
-
-    Color hint: A gradient going from the left to right,
-    starting red, getting to the midpoint color
-    10% of the way across the length of the gradient,
-    taking the rest of the 90% of the length to change to blue
-linear-gradient(.25turn, red, 10%, blue)
-
-    Multi-position color stop: A gradient tilted 45 degrees,
-    with a red bottom-left half and a blue top-right half,
-    with a hard line where the gradient changes from red to blue
-linear-gradient(45deg, red 0 50%, blue 50% 100%)
-
-*/
 
 
 
 
 body {
     /* 0.25turn will rotate counterclockwise a quarter of a full spin*/
-    background: linear-gradient(to left top, #3f87a6, #ebf8e1, #f69d3c);
-    /* background: radial-gradient(circle at 100%, #333, #333 50%, #eee 75%, #333 75%); */
-    width: 100vw;
-    height: 100vh;
-    background-size: cover;
+    font-family : 'Gill Sans', 'sans-serif';
+    background-color : #333;
+    color : #222;
+    overflow : hidden;
+    margin : 0;
 }
 
-header {
-    width: 90%;
-    height: 10vh;
+
+
+.container {
+    background-color : #fafafa;
+    transform-origin : top left;
+    width : 100vw;
+    min-height : 100vh;
+    padding : 50px;
+    z-index : 100;
 }
 
-header center {
-    font-size: large;
-    color: rgb(255, 0, 247);
-    border-style: dotted;
+.container.show-nav {
+    transform : rotate(-30deg);
 }
 
-header div #page_info {
-    width: 90%;
-    height: 90vh;
-    background: radial-gradient(circle at 100%, #333, #333 50%, #eee 75%, #333 75%);
+.container .circle-container {
+    border-style : bold;
+    background-color : #fafafa;
+    border-radius : 30px;
+    position : fixed;
+    width : 300px;
+    height : 300px;
+    top : -150px;
+    left : -150px;
+    border-radius : 50%;
+}
+
+.container .circle-container .circle {
+    background-color : #ff7979;
+    height : 300px;
+    width : 300px;
+    border-radius : 50%;
+    position : relative;
+    transition : transform 0.5s linear;
+}
+
+.container .circle-container .circle button {
+    cursor : pointer;
+    position : absolute;
+    top : 50%;
+    left : 50%;
+    height : 100px;
+    background : transparent;
+    border : 0;
+    font-size : 26px;
+    color : #fff;
+}
+
+.container .circle-container .circle button:focus {
+    outline : none;
+}
+
+
+.container .circle-container .circle button#open {
+    left : 60%;
+}
+
+.container .circle-container .circle button#close {
+    top : 60%;
+    transform : rotate(90deg);
+    transform-origin : top left;
+}
+
+nav {
+    position : fixed;
+    bottom : 40px;
+    left : 0px;
+    z-index : -100;
+}
+
+nav ul {
+    list-style-type: none;
+    padding-left : 30px;
+}
+
+nav ul li {
+    text-transform : uppercase;
+    color : #fff;
+    margin : 40px 0;
+}
+
+nav ul li:hover {
+    cursor : pointer;
+}
+
+nav.show-nav ul li:hover {
+    cursor : default;
+}
+
+nav ul li {
+    font-size : 20px;
+    margin-left : 10px;
+}
+
+nav ul li i {
+    font-size : 20px;
+    margin-right : 20px;
 }
