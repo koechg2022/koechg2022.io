@@ -46,7 +46,7 @@ function index_of_string(the_list, the_string, ignore_case = true) {
 
 
 
-
+const nav_tag = document.getElementById('nav_ul');
 
 const navigation = document.getElementById('nav_ul').getElementsByTagName('li');
 
@@ -55,42 +55,42 @@ const close_button = document.getElementById('close');
 const the_container = document.querySelector('.container');
 
 
-function navigate_to_homepage() {
+const navigate_to_homepage = () => {
     console.log(`Directing back to home-page.`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_aboutpage() {
+const navigate_to_aboutpage = () =>{
     console.log(`Directing to about page`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_githubpage() {
+const navigate_to_githubpage = () => {
     console.log(`Directing to github page`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_bookspage() {
+const navigate_to_bookspage = () => {
     console.log(`Directing to book recs page`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_photographypage() {
+const navigate_to_photographypage = () => {
     console.log(`Directing to photography page`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_travelpage() {
+const navigate_to_travelpage = () => {
     console.log(`Directing to travel page`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_hobbiespage() {
+const navigate_to_hobbiespage = () => {
     console.log(`Directing to hobbies page`);
     // TODO IMPLEMENT ME
 }
 
-function navigate_to_contactpage() {
+const navigate_to_contactpage = () => {
     console.log(`Directing to contact page`);
     // TODO IMPLEMENT ME
 }
@@ -152,9 +152,33 @@ const nav_objects = (() => {
     return the_answer;
 })();
 
-for (const nav in nav_objects) {
-    console.log(`${nav} : ${nav_objects[nav]}`);
-    for (const this_attr in nav_objects[nav]) {
-        console.log(`\t${this_attr} : ${nav_objects[nav][this_attr]}`);
+
+function add_navigation() {
+    // console.log(`Inside add_navigation`);
+    for (nav in nav_objects) {
+        console.log(`Adding... nav is ${nav}`);
+        console.log(`the_function here is ${nav_objects[nav][the_function]}`);
+        nav_objects[nav][the_html].addEventListener(`click`, nav_objects[nav][the_function]);
     }
 }
+
+function remove_navigation() {
+    for (nav in nav_objects) {
+        console.log(`Removing... nav is ${nav}`);
+        nav_objects[nav][the_html].removeEventListener(`click`, nav_objects[nav][the_function]);
+    }
+}
+
+open_button.addEventListener(`click`, () => {
+    the_container.classList.add(the_nav);
+    add_navigation();
+    nav_tag.classList.add(the_nav);
+    console.log(`Calling the navigate_function too.`);
+    navigate_to_homepage();
+});
+
+close_button.addEventListener(`click`, () => {
+    the_container.classList.remove(the_nav);
+    remove_navigation();
+    nav_tag.classList.remove(the_nav);
+});

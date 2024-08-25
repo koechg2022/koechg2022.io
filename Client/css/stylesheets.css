@@ -27,10 +27,12 @@ body {
     min-height : 100vh;
     padding : 50px;
     z-index : 100;
+    transition : transform 0.5s linear;
 }
 
 .container.show-nav {
     transform : rotate(-30deg);
+    z-index : -100;
 }
 
 .container .circle-container {
@@ -52,6 +54,10 @@ body {
     border-radius : 50%;
     position : relative;
     transition : transform 0.5s linear;
+}
+
+.container.show-nav .circle-container .circle {
+    transform : rotate(-60deg);
 }
 
 .container .circle-container .circle button {
@@ -97,19 +103,16 @@ nav ul li {
     text-transform : uppercase;
     color : #fff;
     margin : 40px 0;
+    font-size : 20px;
+    margin-left : 10px;
 }
 
-nav ul li:hover {
-    cursor : pointer;
+nav.show-nav ul li {
+    z-index : 1000;
 }
 
 nav.show-nav ul li:hover {
-    cursor : default;
-}
-
-nav ul li {
-    font-size : 20px;
-    margin-left : 10px;
+    cursor : pointer;
 }
 
 nav ul li i {
