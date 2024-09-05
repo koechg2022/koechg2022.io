@@ -89,9 +89,11 @@ void running_server(const char* host_name, const char* port) {
 
         if (has_keyboard_input(for_keyboard)) {
             rec_msg = string_functions::get_keyboard_input();
-            if (rec_msg.find("()") != std::string::npos) {
-                rec_msg = rec_msg.substr(0, rec_msg.find("()"));
+            unsigned long remove_index = rec_msg.find("()");
+            if (remove_index != std::string::npos) {
+                rec_msg = rec_msg.substr(0, remove_index);
             }
+
         }
 
     }

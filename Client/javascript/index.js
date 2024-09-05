@@ -43,7 +43,16 @@ function index_of_string(the_list, the_string, ignore_case = true) {
 }
 
 
-
+const page_titles = {
+    home_page : [`Swimmer`, `Reader`, `Programmer`, `Back-packer`],
+    about_page : [`About Geoffrey`],
+    github_page : [`Projects`],
+    bookrec_page : [`Books`],
+    photograpy_page : [`Photos`],
+    travel_page : [`Travel Photos and Blog`],
+    hobbies_page : [`Reading`, `Swimming`, `Sleeping`, `Coding`, `Traveling`],
+    contact_page : [`How to reach me`]
+};
 
 
 const nav_tag = document.getElementById('nav_ul');
@@ -52,47 +61,74 @@ const navigation = document.getElementById('nav_ul').getElementsByTagName('li');
 
 const open_button = document.getElementById('open');
 const close_button = document.getElementById('close');
+const page_content_container = document.querySelector('.page_content-container')
+const page_content_header = document.querySelector('.page_content-header');
+const page_content_content = document.getElementById('.page_content-content');
 const the_container = document.querySelector('.container');
 
 
 const navigate_to_homepage = () => {
     console.log(`Directing back to home-page.`);
-    // TODO IMPLEMENT ME
+    // console.log(`${page_content_header.innerText}`);
+    // console.log(`${page_content_header.textContent}`); // includes spacing
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["home_page"][Math.floor((Math.random() * page_titles["home_page"].length))]}`;
+    nav_tag.classList.remove(the_nav);
+
+    
 }
 
 const navigate_to_aboutpage = () =>{
     console.log(`Directing to about page`);
-    // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["about_page"][Math.floor(Math.random() * page_titles["about_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const navigate_to_githubpage = () => {
     console.log(`Directing to github page`);
-    // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["github_page"][Math.floor(Math.random() * page_titles["github_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const navigate_to_bookspage = () => {
     console.log(`Directing to book recs page`);
-    // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["bookrec_page"][Math.floor(Math.random() * page_titles["bookrec_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const navigate_to_photographypage = () => {
     console.log(`Directing to photography page`);
     // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["photograpy_page"][Math.floor(Math.random() * page_titles["photograpy_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const navigate_to_travelpage = () => {
     console.log(`Directing to travel page`);
     // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["travel_page"][Math.floor(Math.random() * page_titles["travel_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const navigate_to_hobbiespage = () => {
     console.log(`Directing to hobbies page`);
     // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["hobbies_page"][Math.floor(Math.random() * page_titles["hobbies_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const navigate_to_contactpage = () => {
     console.log(`Directing to contact page`);
     // TODO IMPLEMENT ME
+    the_container.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["contact_page"][Math.floor(Math.random() * page_titles["contact_page"].length)]}`;
+    nav_tag.classList.remove(the_nav);
 }
 
 const nav_objects = (() => {
@@ -156,15 +192,12 @@ const nav_objects = (() => {
 function add_navigation() {
     // console.log(`Inside add_navigation`);
     for (nav in nav_objects) {
-        console.log(`Adding... nav is ${nav}`);
-        console.log(`the_function here is ${nav_objects[nav][the_function]}`);
         nav_objects[nav][the_html].addEventListener(`click`, nav_objects[nav][the_function]);
     }
 }
 
 function remove_navigation() {
     for (nav in nav_objects) {
-        console.log(`Removing... nav is ${nav}`);
         nav_objects[nav][the_html].removeEventListener(`click`, nav_objects[nav][the_function]);
     }
 }
@@ -173,8 +206,6 @@ open_button.addEventListener(`click`, () => {
     the_container.classList.add(the_nav);
     add_navigation();
     nav_tag.classList.add(the_nav);
-    console.log(`Calling the navigate_function too.`);
-    navigate_to_homepage();
 });
 
 close_button.addEventListener(`click`, () => {
