@@ -6,7 +6,7 @@ const the_html = `the_html`;
 const the_index = `the_index`;
 
 
-
+const to_do = `TODO... Under Construction`;
 
 
 
@@ -44,7 +44,7 @@ function index_of_string(the_list, the_string, ignore_case = true) {
 
 
 const page_titles = {
-    home_page : [`Swimmer`, `Reader`, `Programmer`, `Back-packer`],
+    home_page : [`Swimmer`, `Reader`, `Programmer`, `Backpacker`],
     about_page : [`About Geoffrey`],
     github_page : [`Projects`],
     bookrec_page : [`Books`],
@@ -63,7 +63,7 @@ const open_button = document.getElementById('open');
 const close_button = document.getElementById('close');
 const page_content_container = document.querySelector('.page_content-container')
 const page_content_header = document.querySelector('.page_content-header');
-const page_content_content = document.getElementById('.page_content-content');
+const page_content_content = document.querySelector('.page_content_content');
 const the_container = document.querySelector('.container');
 
 
@@ -72,10 +72,9 @@ const navigate_to_homepage = () => {
     // console.log(`${page_content_header.innerText}`);
     // console.log(`${page_content_header.textContent}`); // includes spacing
     the_container.classList.remove(the_nav);
-    page_content_header.innerText = `${page_titles["home_page"][Math.floor((Math.random() * page_titles["home_page"].length))]}`;
     nav_tag.classList.remove(the_nav);
-
-    
+    page_content_header.innerText = `${page_titles["home_page"][Math.floor((Math.random() * page_titles["home_page"].length))]}`;
+    // page_content_content.innerText = `${to_do}`;
 }
 
 const navigate_to_aboutpage = () =>{
@@ -213,3 +212,6 @@ close_button.addEventListener(`click`, () => {
     remove_navigation();
     nav_tag.classList.remove(the_nav);
 });
+
+
+navigate_to_homepage();
