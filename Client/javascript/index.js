@@ -1,10 +1,18 @@
 
 
+
+let first_visit = true;
+
+
+
+
+
 const the_nav = `show-nav`;
 const the_function = `the_function`;
 const the_html = `the_html`;
 const the_index = `the_index`;
-const homepage_html = `../html/home.html`;
+const homepage_html = `../html/__home__.html`;
+const aboutpage_html = "../html/__about__.html";
 
 const to_do = `TODO... Under Construction`;
 
@@ -94,11 +102,12 @@ const navigate_to_homepage = async () => {
     page_content_content.innerHTML = await get_file_data(homepage_html);
 }
 
-const navigate_to_aboutpage = () =>{
+const navigate_to_aboutpage = async () =>{
     console.log(`Directing to about page`);
     the_container.classList.remove(the_nav);
-    page_content_header.innerText = `${page_titles["about_page"][Math.floor(Math.random() * page_titles["about_page"].length)]}`;
     nav_tag.classList.remove(the_nav);
+    page_content_header.innerText = `${page_titles["about_page"][Math.floor(Math.random() * page_titles["about_page"].length)]}`;
+    page_content_content.innerHTML = await get_file_data(aboutpage_html);
 }
 
 const navigate_to_githubpage = () => {
@@ -117,7 +126,6 @@ const navigate_to_bookspage = () => {
 
 const navigate_to_photographypage = () => {
     console.log(`Directing to photography page`);
-    // TODO IMPLEMENT ME
     the_container.classList.remove(the_nav);
     page_content_header.innerText = `${page_titles["photograpy_page"][Math.floor(Math.random() * page_titles["photograpy_page"].length)]}`;
     nav_tag.classList.remove(the_nav);
@@ -125,7 +133,6 @@ const navigate_to_photographypage = () => {
 
 const navigate_to_travelpage = () => {
     console.log(`Directing to travel page`);
-    // TODO IMPLEMENT ME
     the_container.classList.remove(the_nav);
     page_content_header.innerText = `${page_titles["travel_page"][Math.floor(Math.random() * page_titles["travel_page"].length)]}`;
     nav_tag.classList.remove(the_nav);
@@ -133,7 +140,6 @@ const navigate_to_travelpage = () => {
 
 const navigate_to_hobbiespage = () => {
     console.log(`Directing to hobbies page`);
-    // TODO IMPLEMENT ME
     the_container.classList.remove(the_nav);
     page_content_header.innerText = `${page_titles["hobbies_page"][Math.floor(Math.random() * page_titles["hobbies_page"].length)]}`;
     nav_tag.classList.remove(the_nav);
@@ -141,7 +147,6 @@ const navigate_to_hobbiespage = () => {
 
 const navigate_to_contactpage = () => {
     console.log(`Directing to contact page`);
-    // TODO IMPLEMENT ME
     the_container.classList.remove(the_nav);
     page_content_header.innerText = `${page_titles["contact_page"][Math.floor(Math.random() * page_titles["contact_page"].length)]}`;
     nav_tag.classList.remove(the_nav);
@@ -231,4 +236,6 @@ close_button.addEventListener(`click`, () => {
 });
 
 
-navigate_to_homepage();
+(first_visit) ? navigate_to_homepage() : null;
+// navigate_to_homepage();
+first_visit = false;
