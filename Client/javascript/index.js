@@ -4,7 +4,7 @@ const the_nav = `show-nav`;
 const the_function = `the_function`;
 const the_html = `the_html`;
 const the_index = `the_index`;
-
+const homepage_html = `../html/home.html`;
 
 const to_do = `TODO... Under Construction`;
 
@@ -42,6 +42,24 @@ function index_of_string(the_list, the_string, ignore_case = true) {
     return -1;
 }
 
+async function get_file_data(file_name) {
+
+    let the_answer = await fetch(file_name)
+    .then((res) => {
+        // console.log(`res is ${res.text()}`);
+        return res.text();
+    })
+    .then(msg => {
+        // console.log(`msg is ${msg}`);
+        return msg;
+    })
+    .catch ((failure) => {
+        console.error(`Ya it epically failed... Error ${failure.text}`);
+        return "";
+    });
+    return the_answer;
+}
+
 
 const page_titles = {
     home_page : [`Swimmer`, `Reader`, `Programmer`, `Backpacker`],
@@ -67,14 +85,13 @@ const page_content_content = document.querySelector('.page_content_content');
 const the_container = document.querySelector('.container');
 
 
-const navigate_to_homepage = () => {
+const navigate_to_homepage = async () => {
+    page_content_content.innerHTML = "";
     console.log(`Directing back to home-page.`);
-    // console.log(`${page_content_header.innerText}`);
-    // console.log(`${page_content_header.textContent}`); // includes spacing
     the_container.classList.remove(the_nav);
     nav_tag.classList.remove(the_nav);
     page_content_header.innerText = `${page_titles["home_page"][Math.floor((Math.random() * page_titles["home_page"].length))]}`;
-    // page_content_content.innerText = `${to_do}`;
+    page_content_content.innerHTML = await get_file_data(homepage_html);
 }
 
 const navigate_to_aboutpage = () =>{
