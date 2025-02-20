@@ -87,7 +87,6 @@
             class getaddrinfo_failure : public base_exception {
                 public:
                     getaddrinfo_failure(const std::string msg = "Failed to retrieve address information", bool print = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
-                    ~getaddrinfo_failure() throw();
             };
 
             class getifaddrs_failure : public base_exception {
