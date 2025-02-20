@@ -219,7 +219,7 @@
                     std::string hostname, portvalue;
                     struct addrinfo* connect_address;
                     struct timeval timeout;
-                    bool tcp, was_init, del_on_except;
+                    bool tcp, was_init, del_on_except, secure_;
 
                     bool socket_is_connected(const socket_type check_sock);
 
@@ -228,7 +228,7 @@
                     host();
                     
 
-                    host(const std::string host_name, const std::string port = DEFAULT_PORT, bool use_tcp = true, long wait_sec = 0, int wait_msec = 100000, bool will_del = true);
+                    host(const std::string host_name, const std::string port = DEFAULT_PORT, bool use_tcp = true, long wait_sec = 0, int wait_msec = 100000, bool will_del = true, bool secure = false);
 
                     
                     ~host();
