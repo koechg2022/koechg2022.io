@@ -186,6 +186,7 @@
 #define CASE_DIFF 'a' - 'A'
 #define prev -1
 #define NOT !=
+#define null NULL
 
 
 #define buffer_size 100

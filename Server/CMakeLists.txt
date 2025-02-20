@@ -2,7 +2,7 @@
 
 
 
-
+# cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 
 
@@ -24,6 +24,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../objects)
 
 # Add your source files here
 add_executable(test_server tests/test_server.c++)
+
+# Add compiler flags
+target_compile_options(test_server PRIVATE -Wall -Wextra)
 
 # If you have additional include directories, add them like this:
 target_include_directories(test_server PRIVATE headers)
