@@ -313,8 +313,10 @@ namespace networking {
                     case 0 : {
 
                         address_name = std::string(buffer);
-
-                        if (not the_answer.count(adapter_name)) {
+                        if (address_name.empty()) {
+                            continue;
+                        }
+                        else if (not the_answer.count(adapter_name)) {
 
                             std::map<std::string, std::vector<std::string> > new_map;
                             std::vector<std::string> new_list;
@@ -347,8 +349,10 @@ namespace networking {
                     case 0 : {
 
                         address_name = std::string(buffer);
-
-                        if (not the_answer.count(adapter_name)) {
+                        if (address_name.empty()) {
+                            continue;
+                        }
+                        else if (not the_answer.count(adapter_name)) {
 
                             std::map<std::string, std::vector<std::string> > new_map;
                             std::vector<std::string> new_list;
