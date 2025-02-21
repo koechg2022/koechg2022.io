@@ -201,6 +201,14 @@
         std::map<std::string, std::map<std::string, std::vector<std::string> > > this_machine_adapters();
 
 
+        /**
+            @brief Check if the socket is connected or not.
+            @param the_socket (`const socket_type`) : The socket to check if it's connected or not.
+            @returns `true` if `the_socket` is connected, `false` otherwise.
+         */
+        bool socket_is_connected(const socket_type the_socket);
+
+
         namespace network_structures {
 
             namespace connected_host {
@@ -230,12 +238,7 @@
                     std::string hostname, portvalue;
                     struct addrinfo* connect_address;
                     struct timeval timeout;
-                    bool tcp, was_init, del_on_except, secure_, ssl_lib_init, openssl_alg_init, ssl_error_strings_init;
-                    SSL_CTX* ctx;
-                    SSL* ssl;
-                    X509* certification;
-
-                    bool socket_is_connected(const socket_type check_sock);
+                    bool tcp, was_init, del_on_except, secure_;
 
                 public:
 
@@ -373,13 +376,6 @@
                     socket_type max_socket;
                     std::map<socket_type, connected_host::client> clients;
 
-                    /**
-                        @brief Checks if the address is bound or not.
-                        If the address is bound, the method returns `true`,
-                        and if it isn't the method returns `false`.
-                     */
-                    bool address_is_bound();
-
 
                 public:
 
@@ -411,6 +407,13 @@
                     bool start_listening();
 
 
+                    /**
+                        @brief Check if the server is listening or not
+                        with the `tcp_server` object itself.
+
+                        @returns `true` if the `tcp_server` is listening, 
+                        `false` if it's not.
+                     */
                     operator bool() const;
 
 
@@ -514,16 +517,9 @@
                         @brief Get the maximum socket that the server is currently using.
                         @note, if an invalid socket is returned, then there are no connections 
                         to this server.
+                        @returns the socket that is the maximum socket that is connected to this server.
                      */
                     socket_type get_max_socket() const;
-
-
-                    /**
-                        @brief Check if the socket passed in is connected or not.
-                     */
-                    bool connected_socket(const socket_type sock);
-
-
 
             };
 
@@ -567,7 +563,7 @@
                     *   `false` otherwise.
                     *
                     */
-                    bool client_is_connected();
+                    bool client_is_connected() const;
 
 
                     /**
@@ -608,7 +604,6 @@
                     connected_host::server get_connection_info() const;
 
             };
-
 
         }
 

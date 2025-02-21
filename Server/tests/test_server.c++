@@ -3,11 +3,17 @@
 #include "../libs/misc_functions.h++"
 
 
+const std::string UNDER_CONSTRUCTION = "UNDER CONSTRUCTION";
+
+
+
 void list_machine_adapters();
 
 void resolve_hostname();
 
 void test_server();
+
+void test_client();
 
 int main(int len, char** args) {
 
@@ -25,6 +31,10 @@ int main(int len, char** args) {
 
         else if (string_functions::same_string(std::string(args[index]), "tcp_server") or string_functions::same_string(std::string(args[index]), "ts")) {
             test_server();
+        }
+
+        else if (string_functions::same_string(std::string(args[index]), "tcp_client") or string_functions::same_string(std::string(args[index]), "tc")) {
+            test_client();
         }
     }
 
@@ -124,11 +134,20 @@ void test_server() {
 
                 else if (string_functions::same_string(msg_string, "list_connected_machines()") or string_functions::same_string(msg_string, "lcm")) {
                     clients = server.connected_client_info();
-                    for (auto client = clients.begin(); client NOT clients.end(); client++) {
-                        std::cout << client->hostname << ":" << std::endl;
-                        std::cout << "\tConnection socket : " << client->connected_socket << std::endl;
-                        std::cout << "\tPort : " << client->portvalue << std::endl;
+                    if (clients.empty()) {
+                        std::cout << "No clients connected to this server..." << std::endl;
                     }
+                    else {
+                        for (auto client = clients.begin(); client NOT clients.end(); client++) {
+                            std::cout << client->hostname << ":" << std::endl;
+                            std::cout << "\tConnection socket : " << client->connected_socket << std::endl;
+                            std::cout << "\tPort : " << client->portvalue << std::endl;
+                        }
+                    }
+                }
+
+                else if (string_functions::same_string(msg_string, "broadcast()") or string_functions::same_string(msg_string, "brdcst")) {
+                    std::cout << UNDER_CONSTRUCTION << std::endl;
                 }
 
             }
@@ -136,4 +155,22 @@ void test_server() {
         }
         std::printf("Server is disconnected...\n");
     }
+}
+
+
+
+void test_client() {
+
+    networking::network_structures::tcp_client client(string_functions::get_input("Host to connect to : "));
+    std::cout << "Successfully created the tcp_client." << std::endl;
+    
+    if (client.connect_client()) {
+        std::cout << "Client successfully connected" << std::endl;
+    }
+    else {
+        std::cout << "Client failed to connect" << std::endl;
+    }
+
+    client.disconnect_client();
+    std::printf("Disconnected client\n");
 }
