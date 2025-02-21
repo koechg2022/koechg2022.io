@@ -1,8 +1,13 @@
+
 #include "../libs/networking.h++"
+#include "../libs/misc_functions.h++"
 
 
 void list_machine_adapters();
 
+void resolve_hostname();
+
+void test_server();
 
 int main(int len, char** args) {
 
@@ -10,8 +15,16 @@ int main(int len, char** args) {
     std::printf("There are %d arguments:\n", len - 1);
     for (index = 1; index < len; index++) {
         std::printf("\t%d.) %s\n", index, args[index]);
-        if (string_functions::same_string(std::string(args[index]), "list_adapters")) {
+        if (string_functions::same_string(std::string(args[index]), "list_adapters") or string_functions::same_string(std::string(args[index]), "la")) {
             list_machine_adapters();
+        }
+
+        else if (string_functions::same_string(std::string(args[index]), "resolve_host") or string_functions::same_string(std::string(args[index]), "rh")) {
+            resolve_hostname();
+        }
+
+        else if (string_functions::same_string(std::string(args[index]), "tcp_server") or string_functions::same_string(std::string(args[index]), "ts")) {
+            test_server();
         }
     }
 
@@ -35,5 +48,92 @@ void list_machine_adapters() {
                 index++;
             }
         }
+    }
+}
+
+void resolve_hostname() {
+    std::string host;
+    std::cout << "Hostname : ";
+    std::cin >> host;
+    std::cout << std::endl;
+    std::vector<std::string> addresses = networking::resolve_hostname(host);
+    std::cout << host << ":" << std::endl;
+    unsigned long index;
+    for (index = 0; index < addresses.size(); index++) {
+        std::cout << "\t" << addresses[index] << std::endl;
+    }
+}
+
+void test_server() {
+
+    networking::network_structures::tcp_server server;
+    std::printf("Successfully creates the tcp_server.\n");
+    
+    if (server.start_listening()) {
+        std::printf("Server is listening...\n");
+        std::cout << "Connect to the server using:" << std::endl;
+        std::cout << "\t" << server.host_name() << " : " << server.port_value() << std::endl;
+        std::set<networking::network_structures::connected_host::client> clients;
+        char msg[kilo_byte];
+        ssize_t msg_len, len;
+        std::string msg_string;
+        std::memset(msg, 0, kilo_byte);
+
+        while (server.server_is_listening()) {
+            
+            if (server.accept_new_connection()) {
+                std::cout << "New connection accepted. Here are the new clients:" << std::endl;
+                clients = server.connected_client_info();
+
+                for (auto client = clients.begin(); client NOT clients.end(); client++) {
+                    std::cout << "\t" << client->hostname << " : " << client->portvalue << std::endl;
+                }
+            }
+
+            // New connected have been accounted for
+            // Are there any new messages from the clients?
+            clients = server.ready_client_info();
+            for (auto client = clients.begin(); client NOT clients.end(); client++) {
+                msg_len = 0;
+                msg_string = "";
+                while ((len = recv(client->connected_socket, msg, kilo_byte - msg_len, 0)) > 0) {
+                    if (msg_len is kilo_byte) {
+                        msg_string = std::string(msg);
+                        std::memset(msg, 0, kilo_byte);
+                    }
+                }
+                if (msg_len < 1) {
+                    std::cout << "Disconnected \"" << client->hostname << "\"" << std::endl;
+                    server.close_connection(client->connected_socket);
+                    continue;
+                }
+                msg_string = msg_string + std::string(msg);
+                std::cout << client->hostname << "(" << misc_functions::get_current_time() << ") : " << std::endl;
+                std::cout << "\"" << msg_string << "\"" << std::endl;
+            }
+
+            // Control the server from the command line.
+            if (string_functions::has_keyboard_input()) {
+                msg_string = string_functions::get_input();
+                
+                
+                if (string_functions::same_string(msg_string, "exit()") or string_functions::same_string(msg_string, "exit")) {
+                    server.close_server();
+                }
+
+
+                else if (string_functions::same_string(msg_string, "list_connected_machines()") or string_functions::same_string(msg_string, "lcm")) {
+                    clients = server.connected_client_info();
+                    for (auto client = clients.begin(); client NOT clients.end(); client++) {
+                        std::cout << client->hostname << ":" << std::endl;
+                        std::cout << "\tConnection socket : " << client->connected_socket << std::endl;
+                        std::cout << "\tPort : " << client->portvalue << std::endl;
+                    }
+                }
+
+            }
+
+        }
+        std::printf("Server is disconnected...\n");
     }
 }

@@ -15,6 +15,13 @@
                 bool is_init = false;
             #else
                 const bool is_init = true;
+                #if defined(mac_os)
+                    const std::string rel_adapter = "en0";
+                #elif
+                    const std::string rel_adapter = "enp0s8";
+                #else
+                    const std::string rel_adapter = "Wi-Fi 3"
+                #endif
             #endif
         }
 

@@ -504,7 +504,24 @@ namespace networking {
         if (not this->connect_address) {
 
             if (this->hostname.empty()) {
-                throw exceptions::connect_failure("No hostname passed in", true, __FILE__, __LINE__ - 1, __FUNCTION__);
+                std::map<std::string, std::map<std::string, std::vector<std::string> > > machine_adapters = this_machine_adapters();
+                for (auto adapter = machine_adapters.begin(); adapter NOT machine_adapters.end(); adapter++) {
+                    if (not string_functions::same_string(adapter->first, rel_adapter)) {
+                        continue;
+                    }
+
+                    for (auto family = adapter->second.begin(); family NOT adapter->second.end(); family++) {
+                        if (string_functions::same_string(family->first, network_address_families::ip_version4_address_family) or 
+                        string_functions::same_string(family->first, network_address_families::ip_version6_address_family)) {
+                            this->hostname = *family->second.begin();
+                            break;
+                        }
+                    }
+
+                    if (not this->hostname.empty()) {
+                        break;
+                    }
+                }
             }
             this->portvalue = (this->portvalue.empty()) ? DEFAULT_PORT : this->portvalue;
             struct addrinfo hints;
@@ -525,79 +542,6 @@ namespace networking {
                 SSL_CTX_free(this->ctx);
                 throw exceptions::getaddrinfo_failure("Failed to retrieve address information for host \"" + this->hostname + "\"", true, __FILE__,__LINE__ - 2, __FUNCTION__);
             }
-            // char address_buffer[buffer_size], service_buffer[buffer_size];
-            // std::memset(address_buffer, 0, buffer_size);
-            // std::memset(service_buffer, 0, buffer_size);
-            this->create_socket();
-
-            if (not valid_socket(this->connect_socket)) {
-                this->create_socket();
-            }
-
-            if (not valid_socket(this->connect_socket)) {
-                freeaddrinfo(this->connect_address);
-                SSL_CTX_free(this->ctx);
-                throw exceptions::create_socket_failure("Failed to create the connection socket", true, __FILE__, __LINE__ - 3, __FUNCTION__);
-            }
-
-
-            if (connect(this->connect_socket, this->connect_address->ai_addr, this->connect_address->ai_addrlen)) {
-                freeaddrinfo(this->connect_address);
-                close_socket(this->connect_socket);
-                SSL_CTX_free(this->ctx);
-                throw exceptions::connect_failure("Successfully created the socket, but failed to connect the socket", true, __FILE__, __LINE__ - 2, __FUNCTION__);
-            }
-
-            // The address is created. Now to create the ssl
-
-            if (this->secure_) {
-                this->ssl = SSL_new(this->ctx);
-                if (not this->ssl) {
-                    close_socket(this->connect_socket);
-                    SSL_CTX_free(this->ctx);
-                    freeaddrinfo(this->connect_address);
-                    throw exceptions::unexpected_exception("Failed to create a new SSL connection", true, __FILE__, __LINE__ - 5, __FUNCTION__);
-                }
-
-                if (not SSL_set_tlsext_host_name(this->ssl, this->hostname.c_str())) {
-                    SSL_shutdown(this->ssl);
-                    close_socket(this->connect_socket);
-                    SSL_CTX_free(this->ctx);
-                    freeaddrinfo(this->connect_address);
-                    throw exceptions::unexpected_exception("Failed to set the hostname", true, __FILE__, __LINE__ - 5, __FUNCTION__);
-                }
-
-                SSL_set_fd(this->ssl, this->connect_socket);
-                if (SSL_connect(this->ssl) is -1) {
-                    SSL_shutdown(this->ssl);
-                    freeaddrinfo(this->connect_address);
-                    close_socket(this->connect_socket);
-                    throw exceptions::unexpected_exception("Failed to connect the secure tunnel", true, __FILE__, __LINE__ - 4, __FUNCTION__);
-                }
-
-                std::printf("SSL/TLS using %s\n", SSL_get_cipher(this->ssl));
-
-                this->certification = SSL_get_peer_certificate(this->ssl);
-
-                if (not this->certification) {
-                    SSL_shutdown(this->ssl);
-                    freeaddrinfo(this->connect_address);
-                    close_socket(this->connect_socket);
-                    throw exceptions::unexpected_exception("Failed to create the SSL certification", true, __FILE__, __LINE__ - 6, __FUNCTION__);
-                }
-
-                char* temp;
-
-                if ((temp = X509_NAME_oneline(X509_get_subject_name(this->certification), 0, 0))) {
-                    std::printf("Issuer : %s\n", temp);
-                    OPENSSL_free(temp);
-                }
-
-                X509_free(this->certification);
-
-                return this->connect_address NOT null and this->ssl NOT null and this->ctx NOT null;
-            }
-
         }
 
         return this->connect_address NOT null;
