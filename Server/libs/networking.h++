@@ -198,15 +198,19 @@
 
             namespace connected_host {
                 
-                typedef struct {
+                typedef struct client {
                     std::string hostname, portvalue;
                     socket_type connected_socket;
                     struct sockaddr_storage address_info;
+
+                    bool operator<(const client& other) const;
                 } client;
 
-                typedef struct {
+                typedef struct server{
                     std::string hostname, portvalue;
                     struct addrinfo address_info;
+
+                    bool operator<(const server& other) const;
                 } server;
 
             }
@@ -219,7 +223,10 @@
                     std::string hostname, portvalue;
                     struct addrinfo* connect_address;
                     struct timeval timeout;
-                    bool tcp, was_init, del_on_except, secure_;
+                    bool tcp, was_init, del_on_except, secure_, ssl_lib_init, openssl_alg_init, ssl_error_strings_init;
+                    SSL_CTX* ctx;
+                    SSL* ssl;
+                    X509* certification;
 
                     bool socket_is_connected(const socket_type check_sock);
 
@@ -354,6 +361,11 @@
             class tcp_server : public host {
                 private:
 
+                    int listen_lim;
+                    bool listening, bound;
+                    socket_type max_socket;
+                    std::map<socket_type, connected_host::client> clients;
+
                     /**
                         @brief Checks if the address is bound or not.
                         If the address is bound, the method returns `true`,
@@ -364,7 +376,7 @@
 
                 public:
 
-                    tcp_server(const std::string host = "", const std::string port = "8080", int listen_limit = 10, long seconds_wait = 0, int micro_sec_wait = 100000);
+                    tcp_server(const std::string host = "", const std::string port = "8080", int listen_limit = 10, long seconds_wait = 0, int micro_sec_wait = 100000, bool will_del = true, bool secure = false);
 
 
                     ~tcp_server();
@@ -374,7 +386,7 @@
                         @brief Check if the server is listening or not.
                         @returns `true` if the server is listening, `false` otherwise.
                      */
-                    bool server_is_listening();
+                    bool server_is_listening() const;
 
                     
                     /**
@@ -390,6 +402,17 @@
                         @returns `true` if the server is listening, `false` otherwise.
                      */
                     bool start_listening();
+
+
+                    operator bool() const;
+
+
+                    /**
+                        @brief Get the listening limit on this tcp_server.
+                        @returns The max number of listening instances that
+                        the tcp server can listen for.
+                     */
+                    int listening_limit() const;
 
 
                     /**
@@ -467,7 +490,17 @@
                         and returns `true` if the socket was successfully closed.
                         @param to_close (`socket_type`) : The socket to be closed.
                      */
-                    bool close_connection(socket_type to_close);
+                    bool close_connection(const socket_type to_close);
+
+
+                    /**
+                        @brief Closes the connection to the host (via the port) that were passed in.
+                        @param host_name (`const std::string`) : The host with the connection to be closed.
+                        @param port_name (`const std::string`) : The port being used to sustain the connection to `host_name`.
+                        @returns `true` if the connection to `host_name` via `port_name` 
+                                        is successfully closed, `false` if it's not closed.
+                     */
+                    bool close_connection(const std::string host_name, const std::string port_name);
 
 
                     /**
@@ -496,7 +529,7 @@
                     tcp_client();
 
 
-                    tcp_client(const std::string remote_host, const std::string connect_port = DEFAULT_PORT, const long wait_sec = 0, const int wait_msec = 100000, bool will_del = true);
+                    tcp_client(const std::string remote_host, const std::string connect_port = DEFAULT_PORT, const long wait_sec = 0, const int wait_msec = 100000, bool will_del = true, bool secure = false);
 
 
                     ~tcp_client();

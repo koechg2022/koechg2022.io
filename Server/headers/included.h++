@@ -189,6 +189,7 @@
 #define is ==
 #define less <
 #define greater >
+#define than
 #define IN_RANGE_INCLUDE(a, b, c) (a <= b and b <= c)
 #define CASE_DIFF 'a' - 'A'
 #define prev -1
@@ -211,5 +212,6 @@
 #define response_size 32768
 #define byte char
 
+#define DEFAULT_HOST "LOCALHOST"
 #define DEFAULT_PORT "80"
 #define TIMEOUT 5.0
