@@ -603,6 +603,9 @@
                     */
                     connected_host::server get_connection_info() const;
 
+
+                    operator bool() const;
+
             };
 
         }

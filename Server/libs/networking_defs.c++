@@ -3,7 +3,7 @@
 
 
 #include "networking.h++"
-#include <netdb.h>
+
 
 
 
@@ -943,6 +943,10 @@ namespace networking {
 
     network_structures::connected_host::server network_structures::tcp_client::get_connection_info() const {
         return {this->hostname, this->portvalue, *this->connect_address};
+    }
+
+    network_structures::tcp_client::operator bool() const {
+        return this->client_is_connected();
     }
 
 

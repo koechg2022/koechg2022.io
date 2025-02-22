@@ -131,7 +131,6 @@ void test_server() {
                     server.close_server();
                 }
 
-
                 else if (string_functions::same_string(msg_string, "list_connected_machines()") or string_functions::same_string(msg_string, "lcm")) {
                     clients = server.connected_client_info();
                     if (clients.empty()) {
@@ -165,7 +164,63 @@ void test_client() {
     std::cout << "Successfully created the tcp_client." << std::endl;
     
     if (client.connect_client()) {
+        char msg[kilo_byte];
+        std::memset(msg, 0, kilo_byte);
+        std::string message;
+        ssize_t len, chunk;
         std::cout << "Client successfully connected" << std::endl;
+        while (client) {
+            
+            if (client.server_has_message()) {
+                len = 0;
+                while ((chunk = recv(client.get_connection_socket(), msg + len, kilo_byte - len, O_NONBLOCK)) greater than 0) {
+                    
+                    if (chunk + len is kilo_byte or chunk + len greater than kilo_byte) {
+                        message = message + std::string(msg, kilo_byte);
+                        std::memset(msg, 0, kilo_byte);
+                    }
+                    
+                    len = len + chunk;
+                }
+
+                if (chunk less than 1 and len is 0) {
+                    // Connection is closed
+                    std::cout << "Connection closed by server..." << std::endl;
+                    client.disconnect_client();
+                }
+            }
+
+            if (string_functions::has_keyboard_input()) {
+
+                message = string_functions::get_input();
+
+                if (string_functions::same_string(message, "exit()") or string_functions::same_string(message, "exit")) {
+                    client.disconnect_client();
+                }
+
+                else if (string_functions::same_string(message, "send_message()") or string_functions::same_string(message, "smsg")) {
+                    message = string_functions::get_input("Message to send: ");
+                    chunk = send(client.get_connection_socket(), message.c_str(), message.length(), 0);
+
+                    if (chunk greater than 0) {
+                        if ((unsigned long) chunk == message.length()) {
+                            std::printf("Successfully sent message");
+                        }
+                        ((unsigned long) chunk == message.length()) ? std::printf("Successfully sent message") : std::printf("Message was not successfully sent. Only sent %zd bytes of %lu bytes", chunk, message.length());
+                        continue;
+                    }
+                    std::cout << "Client was disconnected by server." << std::endl;
+                    client.disconnect_client();
+                }
+
+                else if (string_functions::same_string(message, "connection_info()") or string_functions::same_string(message, "ci")) {
+                    networking::network_structures::connected_host::server server_info = client.get_connection_info();
+                    std::cout << server_info.hostname << " : " << server_info.portvalue << std::endl;
+                }
+
+            }
+
+        }
     }
     else {
         std::cout << "Client failed to connect" << std::endl;
