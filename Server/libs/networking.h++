@@ -379,7 +379,7 @@
 
                 public:
 
-                    tcp_server(const std::string host = "", const std::string port = "8080", int listen_limit = 10, long seconds_wait = 0, int micro_sec_wait = 100000, bool will_del = true, bool secure = false);
+                    tcp_server(const std::string host = "", const std::string port = DEFAULT_PORT, int listen_limit = 10, long seconds_wait = 0, int micro_sec_wait = 100000, bool will_del = true, bool secure = false);
 
 
                     ~tcp_server();

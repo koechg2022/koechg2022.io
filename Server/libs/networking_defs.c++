@@ -503,8 +503,9 @@ namespace networking {
         if (this->connect_address is null) {
             struct addrinfo hints;
             std::memset(&hints, 0, sizeof(hints));
+            hints.ai_family = AF_UNSPEC;
             hints.ai_socktype = (this->tcp) ? SOCK_STREAM : SOCK_DGRAM;
-
+            hints.ai_flags = AI_PASSIVE;
             if (getaddrinfo(this->hostname.c_str(), this->portvalue.c_str(), &hints, &this->connect_address)) {
                 throw exceptions::getaddrinfo_failure("Failed to retrieve address information for \"" + this->hostname + "\"", true, __FILE__, __LINE__ - 1, __FUNCTION__);
             }
@@ -649,7 +650,7 @@ namespace networking {
 
             if (bind(this->connect_socket, this->connect_address->ai_addr, this->connect_address->ai_addrlen)) {
                 (this->del_on_except) ? freeaddrinfo(this->connect_address) : (void) 0;
-                throw exceptions::bind_socket_failure("Failed to bind the listening socket for server \"" + this->hostname + "\"", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                throw exceptions::bind_socket_failure("Failed to bind the listening socket for server \"" + this->hostname + "\" on port \"" + this->portvalue + "\"", true, __FILE__, __LINE__ - 2, __FUNCTION__);
             }
             this->bound = true;
         }

@@ -213,5 +213,5 @@
 #define byte char
 
 #define DEFAULT_HOST "LOCALHOST"
-#define DEFAULT_PORT "80"
+#define DEFAULT_PORT "8080"
 #define TIMEOUT 5.0
