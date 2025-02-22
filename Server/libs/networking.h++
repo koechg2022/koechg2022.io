@@ -216,6 +216,9 @@
                 typedef struct client {
                     std::string hostname, portvalue;
                     socket_type connected_socket;
+                    secure_sockets_layer_type secure_sockets_layer;
+                    secure_sockets_layer_context_type context;
+
                     struct sockaddr_storage address_info;
 
                     bool operator<(const client& other) const;
@@ -224,6 +227,7 @@
                 typedef struct server{
                     std::string hostname, portvalue;
                     struct addrinfo address_info;
+                    secure_sockets_layer_context_type context;
 
                     bool operator<(const server& other) const;
                 } server;
@@ -239,6 +243,10 @@
                     struct addrinfo* connect_address;
                     struct timeval timeout;
                     bool tcp, was_init, del_on_except, secure_;
+                    
+                    bool ssl_lib_init, openssl_add_alg, ssl_load_error;
+                    secure_sockets_layer_context_type context;
+                    secure_sockets_layer_type secure_sockets_layer;
 
                 public:
 
@@ -363,6 +371,14 @@
                     *
                     */
                     socket_type get_connection_socket() const;
+
+
+                    /**
+                        @brief Get the secure sockets layers socket that is used for secure connections.
+                        @returns The secure_sockets_layer that this host is using 
+                            for it's secure connection (provided a secure connection is set up).
+                     */
+                    secure_sockets_layer_type get_connection_secure_sockets_layers() const;
 
 
 

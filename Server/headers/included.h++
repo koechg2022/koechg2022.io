@@ -195,6 +195,10 @@
 #define prev -1
 #define NOT !=
 #define null NULL
+#define secure_sockets_layer_type SSL*
+#define secure_sockets_layer_context_type SSL_CTX*
+#define invalid_secure_sockets_layer_socket null
+#define invalid_secure_sockets_layer_context null
 
 
 #define buffer_size 100

@@ -3,7 +3,7 @@
 #include "../libs/misc_functions.h++"
 
 
-const std::string UNDER_CONSTRUCTION = "UNDER CONSTRUCTION";
+// const std::string UNDER_CONSTRUCTION = "UNDER CONSTRUCTION";
 
 
 
@@ -85,7 +85,7 @@ void test_server() {
         std::cout << "\t" << server.host_name() << " : " << server.port_value() << std::endl;
         std::set<networking::network_structures::connected_host::client> clients;
         char msg[kilo_byte];
-        ssize_t msg_len, len;
+        ssize_t msg_len;
         std::string msg_string;
         std::memset(msg, 0, kilo_byte);
 
@@ -104,22 +104,15 @@ void test_server() {
             // Are there any new messages from the clients?
             clients = server.ready_client_info();
             for (auto client = clients.begin(); client NOT clients.end(); client++) {
-                msg_len = 0;
-                msg_string = "";
-                while ((len = recv(client->connected_socket, msg, kilo_byte - msg_len, 0)) > 0) {
-                    if (msg_len is kilo_byte) {
-                        msg_string = std::string(msg);
-                        std::memset(msg, 0, kilo_byte);
-                    }
-                }
-                if (msg_len < 1) {
-                    std::cout << "Disconnected \"" << client->hostname << "\"" << std::endl;
-                    server.close_connection(client->connected_socket);
+                std::memset(msg, 0, kilo_byte);
+                msg_len = recv(client->connected_socket, msg, kilo_byte, 0);
+                if (msg_len > 0) {
+                    msg_string = std::string(msg);
+                    std::cout << client->hostname << "(" << misc_functions::get_current_time() << ") : " << std::endl;
+                    std::cout << "\"" << msg_string << "\"" << std::endl;
                     continue;
                 }
-                msg_string = msg_string + std::string(msg);
-                std::cout << client->hostname << "(" << misc_functions::get_current_time() << ") : " << std::endl;
-                std::cout << "\"" << msg_string << "\"" << std::endl;
+                server.close_connection(client->connected_socket);
             }
 
             // Control the server from the command line.
@@ -146,7 +139,24 @@ void test_server() {
                 }
 
                 else if (string_functions::same_string(msg_string, "broadcast()") or string_functions::same_string(msg_string, "brdcst")) {
-                    std::cout << UNDER_CONSTRUCTION << std::endl;
+                    
+                    msg_string = string_functions::get_input("Message to broadcast: ");
+                    clients = server.connected_client_info();
+                    ssize_t len;
+                    for (auto client = clients.begin(); client NOT clients.end(); client++) {
+                        len = send(client->connected_socket, msg_string.c_str(), msg_string.length(), 0);
+                        if (len < 1) {
+                            std::cerr << "Error sending message to client \"" << client->hostname << "\"" << std::endl;
+                            server.close_connection(client->connected_socket);
+                            continue;
+                        }
+                        if ((unsigned long) len == msg_string.length()) {
+                            std::cout << "Successfully sent message to client \"" << client->hostname << "\"" << std::endl;
+                        }
+                        else {
+                            std::cerr << "Failed to send complete message to client \"" << client->hostname << "\"" << std::endl << "Only sent " << len << " bytes of " << msg_string.length() << " bytes." << std::endl;
+                        }
+                    }
                 }
 
             }
@@ -172,22 +182,14 @@ void test_client() {
         while (client) {
             
             if (client.server_has_message()) {
-                len = 0;
-                while ((chunk = recv(client.get_connection_socket(), msg + len, kilo_byte - len, O_NONBLOCK)) greater than 0) {
-                    
-                    if (chunk + len is kilo_byte or chunk + len greater than kilo_byte) {
-                        message = message + std::string(msg, kilo_byte);
-                        std::memset(msg, 0, kilo_byte);
-                    }
-                    
-                    len = len + chunk;
-                }
-
-                if (chunk less than 1 and len is 0) {
+                len = recv(client.get_connection_socket(), msg, kilo_byte, 0);
+                if (len less than 1) {
                     // Connection is closed
                     std::cout << "Connection closed by server..." << std::endl;
                     client.disconnect_client();
+                    continue;
                 }
+                std::cout << "Message from server (" << misc_functions::get_current_time() << ") : " << std::endl << "\"" << std::string(msg) << "\"" << std::endl;
             }
 
             if (string_functions::has_keyboard_input()) {
@@ -204,9 +206,9 @@ void test_client() {
 
                     if (chunk greater than 0) {
                         if ((unsigned long) chunk == message.length()) {
-                            std::printf("Successfully sent message");
+                            std::printf("Successfully sent message...\n");
                         }
-                        ((unsigned long) chunk == message.length()) ? std::printf("Successfully sent message") : std::printf("Message was not successfully sent. Only sent %zd bytes of %lu bytes", chunk, message.length());
+                        ((unsigned long) chunk < message.length()) ? std::printf("Message was not successfully sent. Only sent %zd bytes of %lu bytes\n", chunk, message.length()) : 0;
                         continue;
                     }
                     std::cout << "Client was disconnected by server." << std::endl;
