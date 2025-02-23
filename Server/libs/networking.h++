@@ -50,10 +50,10 @@
             const std::string unrecognized_address_family = "Unrecognized Address family";
 
 
-            const std::set<std::string> get_address_families();
+            std::set<std::string> get_address_families();
 
 
-            const std::string resolve_address_family_to_string(socket_family_type the_family);
+            std::string resolve_address_family_to_string(socket_family_type the_family);
 
         }
 

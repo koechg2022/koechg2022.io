@@ -1,9 +1,13 @@
 
 
-#include <wx/wx.h>
+#if not defined(_INCLUDED_)
+
+    #define _INCLUDED_
+
+    #include <wx/wx.h>
 
 
- #if defined(_WIN16) or defined(_WIN32) or defined(_WIN64) or defined(__WIN32__) or defined(__TOS_WIN__) or defined(__WINDOWS__)
+    #if defined(_WIN16) or defined(_WIN32) or defined(_WIN64) or defined(__WIN32__) or defined(__TOS_WIN__) or defined(__WINDOWS__)
     
     #if not defined(_WIN32_WINNT)
         #include <winsock2.h>
@@ -66,7 +70,7 @@
     #define close_socket(this_socket) closesocket(this_socket)
     #define sys_slash "\\"
 
-#else
+    #else
 
     #if not defined(unix_os)
         #define unix_os
@@ -141,77 +145,81 @@
     #define close_socket(this_socket) close(this_socket)
     #define sys_slash "/"
 
-#endif
+    #endif
 
 
 
-#if (defined(mac_os) and not defined(_LIBCPP_CTIME)) or (defined(linux_os) and not defined(_GLIBCXX_CTIME)) or (defined(crap_os) and not defined(_CTIME_))
-    #include <ctime>
-#endif
+    #if (defined(mac_os) and not defined(_LIBCPP_CTIME)) or (defined(linux_os) and not defined(_GLIBCXX_CTIME)) or (defined(crap_os) and not defined(_CTIME_))
+        #include <ctime>
+    #endif
 
-#if (defined(mac_os) and not defined(_LIBC_CSTRING)) or (defined(linux_os) and not defined(_GLIBCXX_STRING)) or (defined(crap_os) and not defined(_CSTRING_))
-    #include <cstring>
-#endif
+    #if (defined(mac_os) and not defined(_LIBC_CSTRING)) or (defined(linux_os) and not defined(_GLIBCXX_STRING)) or (defined(crap_os) and not defined(_CSTRING_))
+        #include <cstring>
+    #endif
 
-#if (defined(mac_os) and not defined(_LIBCPP_STRING)) or (defined(linux_os) and not defined(_GLIBCXX_STRING)) or (defined(crap_os) and not defined(_STRING_))
-    #include <string>
-#endif
+    #if (defined(mac_os) and not defined(_LIBCPP_STRING)) or (defined(linux_os) and not defined(_GLIBCXX_STRING)) or (defined(crap_os) and not defined(_STRING_))
+        #include <string>
+    #endif
 
-#if (defined(mac_os) and not defined(_LIBCPP_VECTOR)) or (defined(linux_os) and not defined(_GLIBCXX_VECTOR)) or (defined(crap_os) and not defined(_VECTOR_))
-    #include <vector>
-#endif
+    #if (defined(mac_os) and not defined(_LIBCPP_VECTOR)) or (defined(linux_os) and not defined(_GLIBCXX_VECTOR)) or (defined(crap_os) and not defined(_VECTOR_))
+        #include <vector>
+    #endif
 
-#if (defined(mac_os) and not defined(_LIBCPP_MAP)) or (defined(linux_os) and not defined(_GLIBCXX_MAP)) or (defined(crap_os) and not defined(_MAP_))
-    #include <map>
-#endif
+    #if (defined(mac_os) and not defined(_LIBCPP_MAP)) or (defined(linux_os) and not defined(_GLIBCXX_MAP)) or (defined(crap_os) and not defined(_MAP_))
+        #include <map>
+    #endif
 
-#if (defined(mac_os) and not defined(_LIBCPP_SET)) or (defined(linux_os) and not defined(_GLIBCXX_SET)) or (defined(crap_os) and not defined(_SET_))
-    #include <set>
-#endif
+    #if (defined(mac_os) and not defined(_LIBCPP_SET)) or (defined(linux_os) and not defined(_GLIBCXX_SET)) or (defined(crap_os) and not defined(_SET_))
+        #include <set>
+    #endif
 
-#if (defined(mac_os) and not defined(_SYS_IOCTL_H_)) or (defined(linux_os) and not defined(_SYS_IOCTL_H))
-    #include <sys/ioctl.h>
-#endif
+    #if (defined(mac_os) and not defined(_SYS_IOCTL_H_)) or (defined(linux_os) and not defined(_SYS_IOCTL_H))
+        #include <sys/ioctl.h>
+    #endif
 
-
-#include <openssl/crypto.h>
-#include <openssl/x509.h>
-#include <openssl/pem.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
+    #include <iostream>
 
 
-
-#define is ==
-#define less <
-#define greater >
-#define than
-#define IN_RANGE_INCLUDE(a, b, c) (a <= b and b <= c)
-#define CASE_DIFF 'a' - 'A'
-#define prev -1
-#define NOT !=
-#define null NULL
-#define secure_sockets_layer_type SSL*
-#define secure_sockets_layer_context_type SSL_CTX*
-#define invalid_secure_sockets_layer_socket null
-#define invalid_secure_sockets_layer_context null
-
-
-#define buffer_size 100
-#define kilo_byte 1024
-#define four_kilo_bytes 4096
-#define eight_kilo_bytes 8192
+    #include <openssl/crypto.h>
+    #include <openssl/x509.h>
+    #include <openssl/pem.h>
+    #include <openssl/ssl.h>
+    #include <openssl/err.h>
 
 
 
-#if not defined(AI_ALL)
+    #define is ==
+    #define less <
+    #define greater >
+    #define than
+    #define IN_RANGE_INCLUDE(a, b, c) (a <= b and b <= c)
+    #define CASE_DIFF 'a' - 'A'
+    #define prev -1
+    #define NOT !=
+    #define null NULL
+    #define secure_sockets_layer_type SSL*
+    #define secure_sockets_layer_context_type SSL_CTX*
+    #define invalid_secure_sockets_layer_socket null
+    #define invalid_secure_sockets_layer_context null
+
+
+    #define buffer_size 100
+    #define kilo_byte 1024
+    #define four_kilo_bytes 4096
+    #define eight_kilo_bytes 8192
+
+
+
+    #if not defined(AI_ALL)
     #define AI_ALL 0x0100
+    #endif
+
+
+    #define response_size 32768
+    #define byte char
+
+    #define DEFAULT_HOST "LOCALHOST"
+    #define DEFAULT_PORT "8080"
+    #define TIMEOUT 5.0
+
 #endif
-
-
-#define response_size 32768
-#define byte char
-
-#define DEFAULT_HOST "LOCALHOST"
-#define DEFAULT_PORT "8080"
-#define TIMEOUT 5.0

@@ -16,7 +16,7 @@ namespace networking {
     
     namespace network_address_families {
 
-        const std::set<std::string> get_address_families() {
+        std::set<std::string> get_address_families() {
             std::set<std::string> the_answer;
             the_answer.insert(unspec_address_family);
             the_answer.insert(unrecognized_address_family);
@@ -37,7 +37,7 @@ namespace networking {
             return the_answer;
         }
 
-        const std::string resolve_address_family_to_string(socket_family_type the_family) {
+        std::string resolve_address_family_to_string(socket_family_type the_family) {
             std::string the_answer = unrecognized_address_family;
             switch(the_family) {
 
