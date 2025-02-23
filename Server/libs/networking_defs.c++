@@ -402,7 +402,7 @@ namespace networking {
         if (retval == 0) {
             return false;  // Connection closed
         } else if (retval < 0) {
-            #ifdef _WIN32
+            #if defined(crap_os)
                 error = WSAGetLastError();
                 if (error != WSAEWOULDBLOCK) {
                     return false;  // Error occurred

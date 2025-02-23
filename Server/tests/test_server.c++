@@ -159,6 +159,34 @@ void test_server() {
                     }
                 }
 
+                else if (string_functions::same_string(msg_string, "message_client()") or string_functions::same_string(msg_string, "msgc")) {
+                    clients = server.connected_client_info();
+                    for (auto client = clients.begin(); client NOT clients.end(); client++) {
+                        std::cout << client->hostname << std::endl;
+                        std::cout << "\t" << client->portvalue << std::endl;
+                        std::cout << "\t" << client->connected_socket << std::endl;
+                        std::cout << "--------------------------------------------------------" << std::endl;
+                    }
+                    msg_string = string_functions::get_input("Client : ");
+                    if (string_functions::all_numbers(msg_string.c_str())) {
+                        // socket?
+                        socket_type the_socket;
+                        #if defined(unix_os)
+                            the_socket = std::stoi(msg_string);
+                        #else
+                            the_socket = std::stoull(msg_string);
+                        #endif
+                    }
+                    else if (string_functions::all_letters(msg_string.c_str())){
+                        // hostname?
+                    }
+                    else {
+                        // Combination of numbers, letters, and neither
+                        // Could be hostname
+
+                    }
+                }
+
             }
 
         }
