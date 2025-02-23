@@ -177,7 +177,9 @@
         #include <sys/ioctl.h>
     #endif
 
-    #include <iostream>
+    #if (defined(mac_os) and not defined(_LIBCPP_IOSTREAM)) or (defined(linux_os) and not defined(_GLIBCXX_IOSTREAM)) or (defined(crap_os) and not defined(_IOSTREAM_))
+        #include <iostream>
+    #endif
 
 
     #include <openssl/crypto.h>
