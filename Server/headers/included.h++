@@ -181,6 +181,13 @@
         #include <iostream>
     #endif
 
+    #if (defined(mac_os) and not defined(_LIBCPP_SSTREAM)) or (defined(linux_os) and not defined(_GLIBCXX_SSTREAM)) or (defined(crap_os) and not defined(_SSTREAM_))
+        #include <sstream>
+    #endif
+
+    #if (defined(mac_os) and not defined(_LIBCPP_REGEX)) or (defined(linux_os) and not defined(_GLIBCXX_REGEX)) or (defined(crap_os) and not defined(_REGEX_))
+        #include <regex>
+    #endif
 
     #include <openssl/crypto.h>
     #include <openssl/x509.h>

@@ -22,6 +22,7 @@
         */
         bool is_caps(const char c);
         
+        
         /**
             @brief Check if the character passed in is lowercase.
             @param c (const char) : the character to check it's case.
@@ -29,6 +30,7 @@
         */
         bool is_lower(const char c);
         
+
         /**
             @brief Check if the char passed in is a letter (lowercase or capital case)
             @param c (const char) : the character to check if it's a letter or not.
@@ -36,12 +38,14 @@
         */
         bool is_letter(const char c);
         
+
         /**
             @brief Check if the char passed in is a number or not.
             @param c (const char) : the character to check if it's a number or not.
             @returns `true` if the character passed in is a number, false otherwise.
         */
         bool is_number(const char c);
+
 
         /**
             @brief Convert a char to uppercase, if it is a letter that is lowercase.
@@ -50,12 +54,14 @@
         */
         char to_caps(const char c);
 
+
         /**
             @brief Convert a char to lowercase, if it is a letter that was uppercase.
             @param c (const char) : the character to be converted to a lower case letter.
             @returns the lower case version of `c`
         */
         char to_lower(const char c);
+
 
         /**
             @brief Check if the two chars passed in, `a` and `b` are the same character or not.
@@ -68,6 +74,7 @@
                 and `false` otherwise.
         */
         bool same_char(const char a, const char b, bool ignore_case = true);
+
 
         /**
             @brief Check if the two strings (const char*) passed 
@@ -96,6 +103,7 @@
         */
         bool same_string(const std::string first, const std::string second, bool ignore_case = true);
 
+
         /**
             @brief Check if all the characters in the `char*` are numbers or not.
             @param nums `const char*` The string of characters to check.
@@ -103,6 +111,7 @@
             in `nums`.
         */
         bool all_numbers(const char* nums, const char term = '\0');
+
 
         /**
             @brief Check if all the characters in the `char*` are letters or not.
@@ -112,6 +121,7 @@
         */
         bool all_letters(const char* the_string, const char term = '\0');
 
+
         /**
             @brief Get the length of the string passed in.
             @param the_string (const char*) : The string whose length is to be determined
@@ -120,6 +130,7 @@
         */
         unsigned long string_length(const char* the_string, const char term = '\0');
         
+
         /**
             * @brief get keyboard input.
             * @param prompt (const std::string) Read keyboard input.

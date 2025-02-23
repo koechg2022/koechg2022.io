@@ -417,6 +417,29 @@ namespace networking {
         return true;  // Connection is still alive
     }
 
+    bool is_ipstring(const std::string the_ip, const bool ip4) {
+        if (ip4) {
+            std::istringstream ss(the_ip);
+            std::string octet;
+            int count = 0;
+
+            while (std::getline(ss, octet, '.')) {
+                if (++count > 4 || octet.empty() || octet.size() > 3) return false;
+                for (char c : octet) {
+                    if (!std::isdigit(c)) return false;
+                }
+                int num = std::stoi(octet);
+                if (num < 0 || num > 255 || (octet.size() > 1 && octet[0] == '0')) return false;
+            }
+
+            return count == 4 && ss.eof();
+        }
+
+        const std::regex ipv6_regex(ip6_regex_pattern);
+        
+        return std::regex_match(the_ip, ipv6_regex);
+    }
+
     bool network_structures::connected_host::client::operator<(const client& other) const {
         return this->connected_socket < other.connected_socket;
     }

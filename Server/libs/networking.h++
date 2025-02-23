@@ -23,6 +23,15 @@
                     const std::string rel_adapter = "Wi-Fi 3"
                 #endif
             #endif
+            const std::string ip6_regex_pattern = std::string("^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}") + 
+                                                    std::string("|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}") +
+                                                    std::string("|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}") +
+                                                    std::string("){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:)") + 
+                                                    std::string("{1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6}") + 
+                                                    std::string(")|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}") + 
+                                                    std::string("|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}") + 
+                                                    std::string("(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1") + 
+                                                    std::string("{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$");
         }
 
         namespace network_address_families {
@@ -208,7 +217,18 @@
          */
         bool socket_is_connected(const socket_type the_socket);
 
+        /**
+            @brief Check if `the_ip` is an `IP version 4` or an `IP version 6` 
+            depending on what the flag `ip4` is set to.
 
+            @param the_ip (`const std::string`) : The IP address to be checked
+            @param ip4 (`const bool`) : The IP version to be checked for. If `true`, then it's checked
+            to see if it's IP4, otherwise, it's checking for IP6.
+            @returns `true` if `the_ip` is IP Version 4 and `ip4` is `true`, or if `the_ip` is IP Version 6 and `ip4` is `false`. `false` otherwise.
+         */
+        bool is_ipstring(const std::string the_ip, const bool ip4 = true);
+
+        
         namespace network_structures {
 
             namespace connected_host {
