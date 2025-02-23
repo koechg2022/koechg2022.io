@@ -1096,7 +1096,7 @@ namespace networking {
 
     
     network_structures::tcp_client::~tcp_client() {
-        this->disconnect_client();
+        this->disconnect();
     }
 
 
@@ -1119,7 +1119,7 @@ namespace networking {
         return this->connected;
     }
 
-    bool network_structures::tcp_client::disconnect_client() {
+    bool network_structures::tcp_client::disconnect() {
         if (this->connected) {
             close_socket(this->connect_socket);
             this->connect_socket = invalid_socket;

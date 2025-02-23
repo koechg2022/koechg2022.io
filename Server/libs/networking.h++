@@ -644,7 +644,7 @@
                     *   `false` otherwise.
                     *
                     */
-                    bool disconnect_client();
+                    bool disconnect();
 
                     
                     /**

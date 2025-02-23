@@ -292,7 +292,7 @@ void test_client() {
                 if (len less than 1) {
                     // Connection is closed
                     std::cout << "Connection closed by server..." << std::endl;
-                    client.disconnect_client();
+                    client.disconnect();
                     continue;
                 }
                 std::cout << "Message from server (" << misc_functions::get_current_time() << ") : " << std::endl << "\"" << std::string(msg) << "\"" << std::endl;
@@ -303,7 +303,7 @@ void test_client() {
                 message = string_functions::get_input();
 
                 if (string_functions::same_string(message, "exit()") or string_functions::same_string(message, "exit")) {
-                    client.disconnect_client();
+                    client.disconnect();
                 }
 
                 else if (string_functions::same_string(message, "send_message()") or string_functions::same_string(message, "smsg")) {
@@ -318,7 +318,7 @@ void test_client() {
                         continue;
                     }
                     std::cout << "Client was disconnected by server." << std::endl;
-                    client.disconnect_client();
+                    client.disconnect();
                 }
 
                 else if (string_functions::same_string(message, "connection_info()") or string_functions::same_string(message, "ci")) {
@@ -334,7 +334,7 @@ void test_client() {
         std::cout << "Client failed to connect" << std::endl;
     }
 
-    client.disconnect_client();
+    client.disconnect();
     std::printf("Disconnected client\n");
 }
 
