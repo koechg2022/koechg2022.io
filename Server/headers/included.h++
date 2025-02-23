@@ -4,6 +4,10 @@
 
 
  #if defined(_WIN16) or defined(_WIN32) or defined(_WIN64) or defined(__WIN32__) or defined(__TOS_WIN__) or defined(__WINDOWS__)
+    
+    #if not defined(_WIN32_WINNT)
+        #include <winsock2.h>
+    #endif
 
     #if not defined(crap_os)
         #define crap_os
@@ -11,14 +15,6 @@
 
     #if not defined(_INC_CONIO)
         #include <conio.h>
-    #endif
-
-    #if not defined(_INC_CONIO)
-        #include <conio.h>
-    #endif
-
-    #if not defined(_WIN32_WINNT)
-        #define <winsock2.h>
     #endif
 
     #if not defined(__IPHLPAPI_H__)
