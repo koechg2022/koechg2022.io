@@ -210,6 +210,9 @@
     #define secure_sockets_layer_context_type SSL_CTX*
     #define invalid_secure_sockets_layer_socket null
     #define invalid_secure_sockets_layer_context null
+    
+    #define valid_secure_sockets_layer_socket(the_socket) (the_socket != invalid_secure_sockets_layer_socket)
+    #define valid_secure_sockets_layer_context(the_context) (the_context != invalid_secure_sockets_layer_context)
 
 
     #define buffer_size 100

@@ -138,7 +138,17 @@
 
             class connect_failure : public base_exception {
                 public:
-                    connect_failure(const std::string msg = "connection failure", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
+                    connect_failure(const std::string msg = "connection failure", bool print = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
+            };
+
+            class certificate_or_key_error : public base_exception {
+                public:
+                    certificate_or_key_error(const std::string msg = "A certificate or key failure occured", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
+            };
+
+            class secure_sockets_layer_error : public base_exception {
+                public:
+                    secure_sockets_layer_error(const std::string msg = "A secure sockets layer error occured", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
             };
 
         }
@@ -267,6 +277,10 @@
                     bool ssl_lib_init, openssl_add_alg, ssl_load_error;
                     secure_sockets_layer_context_type context;
                     secure_sockets_layer_type secure_sockets_layer;
+
+                    bool initialize_secure();
+
+                    bool create_context();
 
                 public:
 
@@ -408,10 +422,14 @@
                 private:
 
                     int listen_lim;
-                    bool listening, bound;
+                    bool listening, bound, created_certs;
                     socket_type max_socket;
+                    secure_sockets_layer_type max_secure_socket_layer;
                     std::map<socket_type, connected_host::client> clients;
+                    const std::string cert_pem_file = "cert.pem", key_pem_file = "key.pem";
 
+
+                    bool create_certs_for_server();
 
                 public:
 
@@ -440,7 +458,7 @@
                         @brief Starts the server listening.
                         @returns `true` if the server is listening, `false` otherwise.
                      */
-                    bool start_listening();
+                    bool run();
 
 
                     /**
@@ -556,6 +574,12 @@
                         @returns the socket that is the maximum socket that is connected to this server.
                      */
                     socket_type get_max_socket() const;
+
+                    
+                    /**
+                        @brief Get the maximum secure sockets layer that the server is currently 
+                     */
+                    secure_sockets_layer_type get_max_secure_layer_socket() const;
 
             };
 

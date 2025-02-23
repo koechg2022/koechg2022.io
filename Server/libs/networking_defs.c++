@@ -161,6 +161,12 @@ namespace networking {
         connect_failure::connect_failure(const std::string msg, bool print, const std::string file_name, const int except_line, const std::string function) : 
             base_exception("connect_failure", msg, print, file_name, except_line, function) {}
 
+        certificate_or_key_error::certificate_or_key_error(const std::string msg, bool print, const std::string file_name, const int except_line, const std::string function) : 
+            base_exception("certificate_or_key_error", msg, print, file_name, except_line, function) {}
+        
+        secure_sockets_layer_error::secure_sockets_layer_error(const std::string msg, bool print, const std::string file_name, const int except_line, const std::string function) :
+            base_exception("secure_sockets_layer_error", msg, print, file_name, except_line, function) {}
+
     }
 
     bool initialize_network() {
@@ -456,7 +462,27 @@ namespace networking {
     ////////////////////////////////////////////////////
 
 
-    
+    bool network_structures::host::initialize_secure() {
+
+        if (this->secure_) {
+            (not this->ssl_lib_init) ? SSL_library_init() : 0;
+            this->ssl_lib_init = true;
+            (not this->openssl_add_alg) ? OpenSSL_add_all_algorithms() : 0;
+            this->openssl_add_alg = true;
+            (not this->ssl_load_error) ? SSL_load_error_strings() : 0;
+            this->ssl_load_error = true;
+        }
+        return this->ssl_lib_init and openssl_add_alg and ssl_load_error;
+    }
+
+    bool network_structures::host::create_context() {
+        
+        if (this->secure_) {
+            this->context = (this->context is null) ? SSL_CTX_new(TLS_client_method()) : 0;
+        }
+
+        return this->context NOT null;
+    }
     
     network_structures::host::host() {
         this->connect_socket = invalid_socket;
@@ -547,15 +573,6 @@ namespace networking {
 
     bool network_structures::host::create_address() {
 
-        if (secure_) {
-            (not ssl_lib_init) ? SSL_library_init() : 0;
-            ssl_lib_init = true;
-            (not openssl_add_alg) ? OpenSSL_add_all_algorithms() : 0;
-            openssl_add_alg = true;
-            (not ssl_load_error) ? SSL_load_error_strings() : 0;
-            ssl_load_error = true;
-        }
-
         if (this->connect_address is null) {
             struct addrinfo hints;
             std::memset(&hints, 0, sizeof(hints));
@@ -617,7 +634,21 @@ namespace networking {
     ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////
 
-// network_structures::host::host(const std::string host_name, const std::string port, bool use_tcp, long wait_sec, int wait_msec, bool will_del, bool secure)
+
+    bool network_structures::tcp_server::create_certs_for_server() {
+        
+        if (this->secure_ and not this->created_certs) {
+            
+            if (not SSL_CTX_use_certificate_file(this->context, cert_pem_file.c_str(), SSL_FILETYPE_PEM) or not SSL_CTX_use_PrivateKey_file(this->context, key_pem_file.c_str(), SSL_FILETYPE_PEM)) {
+                    throw exceptions::certificate_or_key_error("Failed to create a certificate and/or a PrivateKey validation", true, __FILE__, __LINE__ - 1, __FUNCTION__);
+            }
+            this->created_certs = true;
+        }
+
+        return this->created_certs;
+    }
+
+
     network_structures::tcp_server::tcp_server(const std::string host, const std::string port, int listen_limit, long seconds_wait, int micro_sec_wait, bool will_del, bool secure) :
         network_structures::host::host(host, port, true, seconds_wait, micro_sec_wait, will_del, secure) {
         
@@ -676,29 +707,36 @@ namespace networking {
 
 
         this->listen_lim = listen_limit;
-        this->listening = bound = false;
+        this->listening = bound = this->created_certs = false;
         this->max_socket = invalid_socket;
     }
 
 
     network_structures::tcp_server::~tcp_server() {
-        if (this->listening) {
-            this->listening = false;
-        }
-
-        if (this->bound) {
-            this->bound = false;
-        }
-
-        if (valid_socket(this->max_socket)) {
-            this->max_socket = invalid_socket;
-        }
-
-        for (auto client = this->clients.begin(); client NOT clients.end(); client++) {
-            if (valid_socket(client->first)) {
-                close_socket(client->first);
+        if (not this->close_server()) {
+            if (this->listening) {
+                this->listening = false;
             }
-            this->clients.erase(client->first);
+
+            if (this->bound) {
+                this->bound = false;
+            }
+
+            if (valid_socket(this->max_socket)) {
+                this->max_socket = invalid_socket;
+            }
+
+            for (auto client = this->clients.begin(); client NOT clients.end(); client++) {
+                if (this->secure_ and socket_is_connected(client->first)) {
+                    SSL_shutdown(client->second.secure_sockets_layer);
+                }
+                (socket_is_connected(client->first)) ? close_socket(client->first) : 0;
+                if (secure_ and client->second.secure_sockets_layer NOT null) {
+                    SSL_free(client->second.secure_sockets_layer);
+                }
+
+                this->clients.erase(client->first);
+            }
         }
     }
 
@@ -709,6 +747,11 @@ namespace networking {
     bool network_structures::tcp_server::bind_socket() {
 
         if (not this->bound) {
+            if (this->secure_) {
+                this->initialize_secure();
+                this->create_context();
+                this->create_certs_for_server();
+            }
             this->create_address();
             this->create_socket();
 
@@ -721,9 +764,14 @@ namespace networking {
         return this->bound;
     }
 
-    bool network_structures::tcp_server::start_listening() {
+    bool network_structures::tcp_server::run() {
 
         if (not this->listening) {
+            if (this->secure_) {
+                this->initialize_secure();
+                this->create_context();
+                this->create_certs_for_server();
+            }
             this->create_address();
             this->create_socket();
             this->bind_socket();
@@ -833,8 +881,9 @@ namespace networking {
     }
 
     bool network_structures::tcp_server::close_server() {
-        if (connect_address NOT null) {
-            freeaddrinfo(connect_address);
+        
+        if (this->connect_address NOT null) {
+            freeaddrinfo(this->connect_address);
             this->connect_address = null;
         }
 
@@ -843,14 +892,36 @@ namespace networking {
             this->connect_socket = invalid_socket;
         }
 
-        this->listening = this->bound = false;
+        if (valid_socket(this->max_socket)) {
+            this->max_socket = invalid_socket;
+        }
 
-        for (auto client = this->clients.begin(); client NOT this->clients.end(); client++) {
-            close_socket(client->first);
+        if (valid_secure_sockets_layer_context(this->context)) {
+            this->context = invalid_secure_sockets_layer_context;
+        }
+
+        if (valid_secure_sockets_layer_socket(this->secure_sockets_layer)) {
+            this->secure_sockets_layer = invalid_secure_sockets_layer_socket;
+        }
+
+        this->listening = this->bound = false;
+        
+        for (auto client = this->clients.begin(); client NOT clients.end(); client++) {
+            if (this->secure_ and socket_is_connected(client->first)) {
+                SSL_shutdown(client->second.secure_sockets_layer);
+            }
+            (socket_is_connected(client->first)) ? close_socket(client->first) : 0;
+            if (secure_ and client->second.secure_sockets_layer NOT null) {
+                SSL_free(client->second.secure_sockets_layer);
+            }
+
             this->clients.erase(client->first);
         }
-        this->max_socket = invalid_socket;
-        return this->clients.empty() and not this->listening and not this->bound;
+
+        return not valid_socket(this->connect_socket) and 
+                not valid_secure_sockets_layer_context(this->context) and
+                not valid_secure_sockets_layer_socket(this->secure_sockets_layer) and
+                this->connect_address NOT null;
     }
 
     bool network_structures::tcp_server::new_connection_request() {
@@ -873,10 +944,13 @@ namespace networking {
             // the listening socket is ready for a new connection socket
             network_structures::connected_host::client new_client;
             new_client.connected_socket = invalid_socket;
+            new_client.secure_sockets_layer = invalid_secure_sockets_layer_context;
+            new_client.context = invalid_secure_sockets_layer_context;
             socklen_t the_size = sizeof(new_client.address_info);
             new_client.connected_socket = accept(this->connect_socket, (struct sockaddr*) &new_client.address_info, &the_size);
 
             if (valid_socket(new_client.connected_socket)) {
+
                 char address[buffer_size], service[buffer_size];
                 std::memset(address, 0, buffer_size);
                 std::memset(service, 0, buffer_size);
@@ -886,8 +960,35 @@ namespace networking {
                     (this->del_on_except) ? this->close_server() : true;
                     throw exceptions::getnameinfo_failure("Failed to retrieve name and/or port of the client that is connecting to this server", true, __FILE__, __LINE__ - 3, __FUNCTION__);
                 }
+
                 new_client.hostname = (string_functions::same_char(*address, 0)) ? "Unspecified Host" : std::string(address);
                 new_client.portvalue = (string_functions::same_char(*service, 0)) ? "Unspecified Port" : std::string(service);
+
+                if (this->secure_) {
+                    new_client.secure_sockets_layer = SSL_new(this->context);
+                    if (new_client.secure_sockets_layer is null) {
+                        throw exceptions::secure_sockets_layer_error("Failed to create a new secure sockets layer", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                    }
+
+                    SSL_set_fd(new_client.secure_sockets_layer, new_client.connected_socket);
+                    if (SSL_accept(new_client.secure_sockets_layer) NOT 1) {
+                        std::cerr << "Error accepting the new secure connection from \""<< 
+                                        new_client.hostname << "\" on port \"" << 
+                                        new_client.portvalue << "\"" << std::endl;
+                        // TODO : Drop this new connection
+                        SSL_shutdown(new_client.secure_sockets_layer);
+                        close_socket(new_client.connected_socket);
+                        SSL_free(new_client.secure_sockets_layer);
+                    }
+
+                    std::cout << "New connection from \"" 
+                            << new_client.hostname << "\""
+                            << " on port \"" << new_client.portvalue 
+                            << "\" using SSL connection \"" 
+                            << std::string(SSL_get_cipher(new_client.secure_sockets_layer)) << 
+                            std::endl;
+                }
+
                 this->clients.insert({new_client.connected_socket, new_client});
             }
         }
@@ -900,15 +1001,24 @@ namespace networking {
 
         for (auto client = this->clients.begin(); client NOT this->clients.end(); client++) {
             if (to_close is client->first) {
+                if (this->secure_ and socket_is_connected(client->first)) {
+                    SSL_shutdown(client->second.secure_sockets_layer);
+                }
                 (socket_is_connected(client->first)) ? close_socket(client->first) : 0;
+                if (secure_ and client->second.secure_sockets_layer NOT null) {
+                    SSL_free(client->second.secure_sockets_layer);
+                }
+
                 this->clients.erase(client->first);
                 the_answer = true;
                 break;
             }
         }
         this->max_socket = invalid_socket;
+        this->max_secure_socket_layer = invalid_secure_sockets_layer_socket;
         for (auto client = this->clients.begin(); client NOT this->clients.end(); client++) {
             this->max_socket = (client->first > this->max_socket) ? client->first : this->max_socket;
+            this->max_secure_socket_layer = (client->second.secure_sockets_layer > this->max_secure_socket_layer) ? client->second.secure_sockets_layer : this->max_secure_socket_layer;
         }
 
         return the_answer;
@@ -920,15 +1030,24 @@ namespace networking {
 
         for (auto client = this->clients.begin(); client NOT this->clients.end(); client++) {
             if (string_functions::same_string(host_name, client->second.hostname) and string_functions::same_string(port_name, client->second.portvalue)) {
+                if (this->secure_ and socket_is_connected(client->first)) {
+                    SSL_shutdown(client->second.secure_sockets_layer);
+                }
                 (socket_is_connected(client->first)) ? close_socket(client->first) : 0;
+                if (secure_ and client->second.secure_sockets_layer NOT null) {
+                    SSL_free(client->second.secure_sockets_layer);
+                }
+
                 this->clients.erase(client->first);
                 the_answer = true;
                 break;
             }
         }
         this->max_socket = invalid_socket;
+        this->max_secure_socket_layer = invalid_secure_sockets_layer_socket;
         for (auto client = this->clients.begin(); client NOT this->clients.end(); client++) {
             this->max_socket = (client->first > this->max_socket) ? client->first : this->max_socket;
+            this->max_secure_socket_layer = (this->secure_) ? client->second.secure_sockets_layer : this->max_secure_socket_layer;
         }
 
         return the_answer;
@@ -936,6 +1055,10 @@ namespace networking {
 
     socket_type network_structures::tcp_server::get_max_socket() const {
         return this->max_socket;
+    }
+
+    secure_sockets_layer_type network_structures::tcp_server::get_max_secure_layer_socket() const {
+        return this->max_secure_socket_layer;
     }
 
     ////////////////////////////////////////////////////

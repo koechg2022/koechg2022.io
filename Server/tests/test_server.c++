@@ -91,7 +91,7 @@ void test_server() {
     networking::network_structures::tcp_server server;
     std::printf("Successfully creates the tcp_server.\n");
     
-    if (server.start_listening()) {
+    if (server.run()) {
         std::printf("Server is listening...\n");
         std::cout << "Connect to the server using:" << std::endl;
         std::cout << "\t" << server.host_name() << " : " << server.port_value() << std::endl;
@@ -345,10 +345,10 @@ void test_secure_server() {
     std::cout << ((server.create_address()) ? "Successfully created the secure tcp_server's address" : "Failed to create the secure tcp_server's address") << std::endl;
     std::cout << ((server.create_socket()) ? "Successfully created the secure tcp_server's socket" : "Failed to create the secure tcp_server's socket") << std::endl;
     std::cout << ((server.bind_socket()) ? "Successfully bound the socket of the tcp_server's socket" : "Failed to bind the tcp_server's socket") << std::endl;
-    std::cout << ((server.start_listening()) ? "Successfully started listening on the tcp_server" : "Failed to start listening on the tcp_server") << std::endl;
+    std::cout << ((server.run()) ? "Successfully started listening on the tcp_server" : "Failed to start listening on the tcp_server") << std::endl;
 
     // server
-    if (server.start_listening()) {
+    if (server.run()) {
         std::printf("Server is listening...\n");
         std::cout << "Connect to the server using:" << std::endl;
         std::cout << "\t" << server.host_name() << " : " << server.port_value() << std::endl;
