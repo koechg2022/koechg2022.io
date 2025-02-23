@@ -1100,7 +1100,7 @@ namespace networking {
     }
 
 
-    bool network_structures::tcp_client::connect_client() {
+    bool network_structures::tcp_client::start() {
         if (not this->connected) {
             this->create_address();
             this->create_socket();

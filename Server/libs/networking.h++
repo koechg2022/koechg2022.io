@@ -428,7 +428,7 @@
                     socket_type max_socket;
                     secure_sockets_layer_type max_secure_socket_layer;
                     std::map<socket_type, connected_host::client> clients;
-                    const std::string cert_pem_file = "cert.pem", key_pem_file = "key.pem";
+                    const std::string cert_pem_file = "../files/cert.pem", key_pem_file = "../files/key.pem";
 
 
                     bool create_certs_for_server();
@@ -593,6 +593,8 @@
                 private:
                     bool connected;
 
+
+
                 public:
 
                     tcp_client();
@@ -615,7 +617,7 @@
                     *
                     *
                     */
-                    bool connect_client();
+                    bool start();
 
 
                     

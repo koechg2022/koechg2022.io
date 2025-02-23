@@ -279,7 +279,7 @@ void test_client() {
     networking::network_structures::tcp_client client(string_functions::get_input("Host to connect to : "));
     // std::cout << "Successfully created the tcp_client." << std::endl;
     
-    if (client.connect_client()) {
+    if (client.start()) {
         char msg[kilo_byte];
         std::memset(msg, 0, kilo_byte);
         std::string message;
@@ -538,7 +538,7 @@ void test_secure_client() {
     std::cout << "Successfully created a secure tcp_client structure" << std::endl;
     std::cout << ((client.create_address()) ? "Successfully created the secure tcp_client's address" : "Failed to create the secure tcp_client's address") << std::endl;
     std::cout << ((client.create_socket()) ? "Successfully created the secure tcp_client's socket" : "Failed to create the secure tcp_client's socket") << std::endl;
-    std::cout << ((client.connect_client()) ? "Successfully connected the secure tcp_client to the server" : "Failed to connect the secure tcp_client to the server") << std::endl;
+    std::cout << ((client.start()) ? "Successfully connected the secure tcp_client to the server" : "Failed to connect the secure tcp_client to the server") << std::endl;
 
     // client is connected
     while (client) {
