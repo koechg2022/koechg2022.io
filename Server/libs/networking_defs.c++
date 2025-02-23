@@ -616,6 +616,10 @@ namespace networking {
         return this->secure_sockets_layer;
     }
 
+    secure_sockets_layer_context_type network_structures::host::get_secure_sockets_layers_context() const {
+        return this->context;
+    }
+
 
     ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////

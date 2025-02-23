@@ -414,6 +414,8 @@
                      */
                     secure_sockets_layer_type get_connection_secure_sockets_layers() const;
 
+                    secure_sockets_layer_context_type get_secure_sockets_layers_context() const;
+
 
 
             };
@@ -568,16 +570,20 @@
 
 
                     /**
-                        @brief Get the maximum socket that the server is currently using.
-                        @note, if an invalid socket is returned, then there are no connections 
+                        @brief Get the maximum socket that the server is currently being using.
+                        @note if an invalid socket is returned, then there are no connections 
                         to this server.
-                        @returns the socket that is the maximum socket that is connected to this server.
+                        @returns The socket that is the maximum socket that is connected to this server.
                      */
                     socket_type get_max_socket() const;
 
                     
                     /**
-                        @brief Get the maximum secure sockets layer that the server is currently 
+                        @brief Get the maximum secure sockets layer that the server is currently being used.
+                        @note if an invalid socket is returned, then there are no secure connections 
+                        to this server.
+                        @returns The secure_sockets layer that is the maximum secure layers 
+                            connection socket to this server.
                      */
                     secure_sockets_layer_type get_max_secure_layer_socket() const;
 
