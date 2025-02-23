@@ -151,6 +151,11 @@
                     secure_sockets_layer_error(const std::string msg = "A secure sockets layer error occured", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
             };
 
+            class certificate_error : public base_exception {
+                public:
+                    certificate_error(const std::string msg = "A secure sockets layer error occured", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
+            };
+
         }
 
         
@@ -258,6 +263,7 @@
                     std::string hostname, portvalue;
                     struct addrinfo address_info;
                     secure_sockets_layer_context_type context;
+                    secure_sockets_layer_type secure_socket;
 
                     bool operator<(const server& other) const;
                 } server;
@@ -591,8 +597,11 @@
 
             class tcp_client : public host {
                 private:
-                    bool connected;
+                    bool is_connected;
+                    X509* certificate;
 
+
+                    bool create_certificate();
 
 
                 public:
@@ -631,7 +640,7 @@
                     *   `false` otherwise.
                     *
                     */
-                    bool client_is_connected() const;
+                    bool connected() const;
 
 
                     /**

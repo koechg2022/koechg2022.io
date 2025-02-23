@@ -542,7 +542,9 @@ void test_secure_client() {
 
     // client is connected
     while (client) {
-
+        std::cout << "Client is connected" << std::endl;
+        break;
     }
 
+    std::cout << "Client disconnected" << std::endl;
 }

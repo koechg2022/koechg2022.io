@@ -167,6 +167,9 @@ namespace networking {
         secure_sockets_layer_error::secure_sockets_layer_error(const std::string msg, bool print, const std::string file_name, const int except_line, const std::string function) :
             base_exception("secure_sockets_layer_error", msg, print, file_name, except_line, function) {}
 
+        certificate_error::certificate_error(const std::string msg, bool print, const std::string file_name, const int except_line, const std::string function) :
+                    base_exception("certificate_error", msg, print, file_name, except_line, function) {}
+
     }
 
     bool initialize_network() {
@@ -479,9 +482,12 @@ namespace networking {
         
         if (this->secure_) {
             this->context = (this->context is null) ? SSL_CTX_new(TLS_client_method()) : 0;
+            if (not valid_secure_sockets_layer_context(this->context)) {
+                throw exceptions::secure_sockets_layer_error("Failed to create a secure sockets layer context", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+            }
         }
 
-        return this->context NOT null;
+        return valid_secure_sockets_layer_context(this->context);
     }
     
     network_structures::host::host() {
@@ -1082,16 +1088,29 @@ namespace networking {
     ////////////////////////////////////////////////////
 
 
+    bool network_structures::tcp_client::create_certificate() {
+        if (this->secure_) {
+            this->certificate = SSL_get_peer_certificate(this->secure_sockets_layer);
+            if (not this->certificate) {
+                throw exceptions::certificate_error("Failed to create the connection certificate for the connection to the server", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+            }
+        }
+        return this->secure_ and this->certificate NOT null;
+    }
+
+
     
     network_structures::tcp_client::tcp_client() :
         networking::network_structures::host() {
-            this->connected = false;
+            this->is_connected = false;
+            this->certificate = null;
     }
 
     
     network_structures::tcp_client::tcp_client(const std::string remote_host, const std::string connect_port, const long wait_sec, const int wait_msec, bool will_del, bool secure) :
         networking::network_structures::host(remote_host, connect_port, true, wait_sec, wait_msec, will_del, secure) {
-            this->connected = false;
+            this->is_connected = false;
+            this->certificate = null;
         }
 
     
@@ -1101,7 +1120,9 @@ namespace networking {
 
 
     bool network_structures::tcp_client::start() {
-        if (not this->connected) {
+        if (not this->is_connected) {
+            this->initialize_secure();
+            this->create_context();
             this->create_address();
             this->create_socket();
 
@@ -1110,22 +1131,62 @@ namespace networking {
                 (not this->was_init) ? uninitialize_network() : true;
                 throw exceptions::connect_failure("Failed to connect to the server for \"" + this->hostname + "\"", true, __FILE__, __LINE__ - 3, __FUNCTION__);
             }
-            this->connected = true;
+            if (this->secure_) {
+                this->secure_sockets_layer = SSL_new(this->context);
+                if (not valid_secure_sockets_layer_socket(this->secure_sockets_layer)) {
+                    throw exceptions::secure_sockets_layer_error("Failed to create a new secure socket layer's", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                }
+
+                char msg[kilo_byte];
+                std::memset(msg, 0, kilo_byte);
+
+                if (not SSL_set_tlsext_host_name(this->secure_sockets_layer, this->hostname.c_str())) {
+                    throw exceptions::secure_sockets_layer_error("Failed to set the hostname of the tls ext hostname", true, __FILE__, __LINE__ - 1, __FUNCTION__);
+                }
+
+                SSL_set_fd(this->secure_sockets_layer, this->connect_socket);
+                if (SSL_connect(this->secure_sockets_layer) == -1) {
+                    throw exceptions::connect_failure("Failed to connect the SSL connection", true, __FILE__, __LINE__ - 1, __FUNCTION__);
+                }
+                this->create_certificate();
+                
+                char* temp;
+                if ((temp = X509_NAME_oneline(X509_get_subject_name(this->certificate), 0, 0))) {
+                    std::cout << "Subject : " << temp << std::endl;
+                    OPENSSL_free(temp);
+                }
+
+                if ((temp = X509_NAME_oneline(X509_get_issuer_name(this->certificate), 0, 0))) {
+                    std::cout << "Issuer: " << temp << std::endl;
+                    OPENSSL_free(temp);
+                }
+
+                X509_free(this->certificate);
+
+            }
+            this->is_connected = true;
         }
-        return this->connected;
+        return this->is_connected;
     }
 
-    bool network_structures::tcp_client::client_is_connected() const {
-        return this->connected;
+    bool network_structures::tcp_client::connected() const {
+        return this->is_connected;
     }
 
     bool network_structures::tcp_client::disconnect() {
-        if (this->connected) {
+        if (this->is_connected) {
+            if (this->secure_) {
+                SSL_shutdown(this->secure_sockets_layer);
+            }
             close_socket(this->connect_socket);
             this->connect_socket = invalid_socket;
-            this->connected = false;
+            if (this->secure_) {
+                SSL_free(this->secure_sockets_layer);
+                SSL_CTX_free(this->context);
+            }
+            this->is_connected = false;
         }
-        return this->connected;
+        return this->is_connected;
     }
 
     bool network_structures::tcp_client::server_has_message() {
@@ -1141,11 +1202,11 @@ namespace networking {
     }
 
     network_structures::connected_host::server network_structures::tcp_client::get_connection_info() const {
-        return {this->hostname, this->portvalue, *this->connect_address};
+        return {this->hostname, this->portvalue, *this->connect_address, this->context, this->secure_sockets_layer};
     }
 
     network_structures::tcp_client::operator bool() const {
-        return this->client_is_connected();
+        return this->connected();
     }
 
 
