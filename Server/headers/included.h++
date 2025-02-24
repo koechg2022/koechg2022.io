@@ -69,6 +69,7 @@
     #define valid_socket(this_socket) this_socket != INVALID_SOCKET
     #define close_socket(this_socket) closesocket(this_socket)
     #define sys_slash "\\"
+    #define get_socket_error(the_error) WSAGetLastError()
 
     #else
 
@@ -144,6 +145,7 @@
     #define valid_socket(this_socket) (this_socket >= 0)
     #define close_socket(this_socket) close(this_socket)
     #define sys_slash "/"
+    #define get_socket_error(the_error) errno
 
     #endif
 

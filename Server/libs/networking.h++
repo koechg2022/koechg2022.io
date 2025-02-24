@@ -153,7 +153,7 @@
 
             class certificate_error : public base_exception {
                 public:
-                    certificate_error(const std::string msg = "A secure sockets layer error occured", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
+                    certificate_error(const std::string msg = "A certificate error occurred", bool pirnt = true, const std::string file_name = __FILE__, const int except_line = __LINE__, const std::string function = "Unknown function");
             };
 
         }
@@ -434,7 +434,7 @@
                     socket_type max_socket;
                     secure_sockets_layer_type max_secure_socket_layer;
                     std::map<socket_type, connected_host::client> clients;
-                    const std::string cert_pem_file = "../files/cert.pem", key_pem_file = "../files/key.pem";
+                    const std::string cert_pem_file = "files/cert.pem", key_pem_file = "files/key.pem";
 
 
                     bool create_certs_for_server();

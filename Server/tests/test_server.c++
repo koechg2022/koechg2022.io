@@ -342,23 +342,19 @@ void test_client() {
 void test_secure_server() {
     networking::network_structures::tcp_server server("", DEFAULT_PORT, 10, 0, 100000, true, true);
     std::cout << "Successfully created a secure tcp_server structure" << std::endl;
-    std::cout << ((server.create_address()) ? "Successfully created the secure tcp_server's address" : "Failed to create the secure tcp_server's address") << std::endl;
-    std::cout << ((server.create_socket()) ? "Successfully created the secure tcp_server's socket" : "Failed to create the secure tcp_server's socket") << std::endl;
-    std::cout << ((server.bind_socket()) ? "Successfully bound the socket of the tcp_server's socket" : "Failed to bind the tcp_server's socket") << std::endl;
-    std::cout << ((server.run()) ? "Successfully started listening on the tcp_server" : "Failed to start listening on the tcp_server") << std::endl;
-
+    
     // server
     if (server.run()) {
         std::printf("Server is listening...\n");
-        std::cout << "Connect to the server using:" << std::endl;
+        std::cout << "Connect to the server using:";
         std::cout << "\t" << server.host_name() << " : " << server.port_value() << std::endl;
         std::set<networking::network_structures::connected_host::client> clients;
         char msg[kilo_byte];
         int msg_len;
         std::string msg_string;
         std::memset(msg, 0, kilo_byte);
-        while (server) {
 
+        while (server) {
             if (server.accept_new_connection()) {
                 std::cout << "New connection accepted. Here are the new clients:" << std::endl;
                 clients = server.connected_client_info();
@@ -387,7 +383,6 @@ void test_secure_server() {
                 std::cout << "(" << now << ") : " << std::endl;
                 std::cout << "\"" << msg << "\"" << std::endl;
             }
-
 
             // // Control the server from the command line.
             if (string_functions::has_keyboard_input()) {
@@ -534,17 +529,64 @@ void test_secure_server() {
 
 
 void test_secure_client() {
-    networking::network_structures::tcp_client client(string_functions::get_input("Host to connect to : "), DEFAULT_PORT, 0, 100000, true, true);
-    std::cout << "Successfully created a secure tcp_client structure" << std::endl;
-    std::cout << ((client.create_address()) ? "Successfully created the secure tcp_client's address" : "Failed to create the secure tcp_client's address") << std::endl;
-    std::cout << ((client.create_socket()) ? "Successfully created the secure tcp_client's socket" : "Failed to create the secure tcp_client's socket") << std::endl;
-    std::cout << ((client.start()) ? "Successfully connected the secure tcp_client to the server" : "Failed to connect the secure tcp_client to the server") << std::endl;
+    networking::network_structures::tcp_client client(string_functions::get_input("Host to connect to : "));
+    // std::cout << "Successfully created the tcp_client." << std::endl;
+    
+    if (client.start()) {
+        char msg[kilo_byte];
+        std::memset(msg, 0, kilo_byte);
+        std::string message;
+        int bytes;
+        std::cout << "Client successfully connected" << std::endl;
+        while (client) {
+            
+            if (client.server_has_message()) {
+                bytes = SSL_read(client.get_connection_secure_sockets_layers(), msg, kilo_byte);
+                if (bytes < 1) {
+                    // Connection is closed
+                    std::cout << "Connection closed by server..." << std::endl;
+                    client.disconnect();
+                    continue;
+                }
+                std::cout << "Message from server (" << misc_functions::get_current_time() << ") : " << std::endl << "\"" << std::string(msg) << "\"" << std::endl;
+            }
 
-    // client is connected
-    while (client) {
-        std::cout << "Client is connected" << std::endl;
-        break;
+            if (string_functions::has_keyboard_input()) {
+
+                message = string_functions::get_input();
+
+                if (string_functions::same_string(message, "exit()") or string_functions::same_string(message, "exit")) {
+                    client.disconnect();
+                }
+
+                else if (string_functions::same_string(message, "send_message()") or string_functions::same_string(message, "smsg")) {
+                    message = string_functions::get_input("Message to send: ");
+                    bytes = SSL_write(client.get_connection_secure_sockets_layers(), message.c_str(), message.length());
+
+                    if (bytes > 0) {
+                        if ((unsigned long) bytes == message.length()) {
+                            std::printf("Successfully sent message...\n");
+                        }
+                        ((unsigned long) bytes < message.length()) ? std::printf("Message was not successfully sent. Only sent %d bytes of %lu bytes\n", bytes, message.length()) : 0;
+                        continue;
+                    }
+                    std::cout << "Client was disconnected by server." << std::endl;
+                    client.disconnect();
+                }
+
+                else if (string_functions::same_string(message, "connection_info()") or string_functions::same_string(message, "ci")) {
+                    networking::network_structures::connected_host::server server_info = client.get_connection_info();
+                    std::cout << server_info.hostname << " : " << server_info.portvalue << std::endl;
+                }
+
+            }
+
+        }
+    }
+    else {
+        std::cout << "Client failed to connect" << std::endl;
     }
 
-    std::cout << "Client disconnected" << std::endl;
+    client.disconnect();
+    std::printf("Disconnected client\n");
 }

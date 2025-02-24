@@ -480,8 +480,8 @@ namespace networking {
 
     bool network_structures::host::create_context() {
         
-        if (this->secure_) {
-            this->context = (this->context is null) ? SSL_CTX_new(TLS_client_method()) : 0;
+        if (this->secure_ and not valid_secure_sockets_layer_context(this->context)) {
+            this->context = SSL_CTX_new(TLS_client_method());
             if (not valid_secure_sockets_layer_context(this->context)) {
                 throw exceptions::secure_sockets_layer_error("Failed to create a secure sockets layer context", true, __FILE__, __LINE__ - 2, __FUNCTION__);
             }
@@ -497,6 +497,9 @@ namespace networking {
         this->timeout = {0, 100000};
         this->tcp = true;
         this->was_init = is_init;
+        if (not is_init) {
+            initialize_network();
+        }
         this->del_on_except = true;
         this->secure_ = false;
         this->ssl_lib_init = this->openssl_add_alg = this->ssl_load_error = false;
@@ -512,6 +515,9 @@ namespace networking {
         this->timeout = {wait_sec, wait_msec};
         this->tcp = use_tcp;
         this->was_init = is_init;
+        if (not is_init) {
+            initialize_network();
+        }
         this->del_on_except = will_del;
         this->secure_ = secure;
         this->ssl_lib_init = this->openssl_add_alg = this->ssl_load_error = false;
@@ -649,8 +655,14 @@ namespace networking {
         
         if (this->secure_ and not this->created_certs) {
             
-            if (not SSL_CTX_use_certificate_file(this->context, cert_pem_file.c_str(), SSL_FILETYPE_PEM) or not SSL_CTX_use_PrivateKey_file(this->context, key_pem_file.c_str(), SSL_FILETYPE_PEM)) {
-                    throw exceptions::certificate_or_key_error("Failed to create a certificate and/or a PrivateKey validation", true, __FILE__, __LINE__ - 1, __FUNCTION__);
+            if (not SSL_CTX_use_certificate_file(this->context, cert_pem_file.c_str(), SSL_FILETYPE_PEM)) {
+                ERR_print_errors_fp(stderr);
+                throw exceptions::certificate_or_key_error("Failed to create a certificate", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+            }
+
+            if (not SSL_CTX_use_PrivateKey_file(this->context, key_pem_file.c_str(), SSL_FILETYPE_PEM)) {
+                ERR_print_errors_fp(stderr);
+                throw exceptions::certificate_or_key_error("Failed to create a PrivateKey validation", true, __FILE__, __LINE__ - 2, __FUNCTION__);
             }
             this->created_certs = true;
         }
@@ -778,18 +790,40 @@ namespace networking {
 
         if (not this->listening) {
             if (this->secure_) {
-                this->initialize_secure();
-                this->create_context();
-                this->create_certs_for_server();
+                if (not this->initialize_secure()) {
+                    (not this->was_init) ? uninitialize_network() : true;
+                    throw exceptions::initialize_network_failure("Failed to initialize the secure network", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                }
+                if (not this->create_context()) {
+                    (not this->was_init) ? uninitialize_network() : true;
+                    throw exceptions::secure_sockets_layer_error("Failed to create the context for the server", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                }
+                if (not this->create_certs_for_server()) {
+                    (not this->was_init) ? uninitialize_network() : true;
+                    throw exceptions::certificate_error("Failed to create the certificates for the server", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                }
             }
-            this->create_address();
-            this->create_socket();
-            this->bind_socket();
+            if (not this->create_address()) {
+                (not this->was_init) ? uninitialize_network() : true;
+                throw exceptions::getaddrinfo_failure("Failed to create the address structure for this server", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+            }
+            if (not this->create_socket()) {
+                freeaddrinfo(this->connect_address);
+                (not this->was_init) ? uninitialize_network() : true;
+                throw exceptions::create_socket_failure("Failed to create the socket for this tcp server", true, __FILE__, __LINE__ - 3, __FUNCTION__);
+            }
+            if (not this->bind_socket()) {
+                freeaddrinfo(this->connect_address);
+                (not this->was_init) ? uninitialize_network() : true;
+                close_socket(this->connect_socket);
+                throw exceptions::bind_socket_failure("Failed to bind the socket for this tcp server", true, __FILE__, __LINE__ - 4, __FUNCTION__);
+            }
 
             if (listen(this->connect_socket, this->listen_lim) < 0) {
                 (this->del_on_except) ? freeaddrinfo(this->connect_address) : (void) 0;
                 (not this->was_init) ? uninitialize_network() : true;
-                throw exceptions::listen_socket_failure("Failed to start listening on the listening socket for \"" + this->hostname + "\"", true, __FILE__, __LINE__ - 2, __FUNCTION__);
+                close_socket(this->connect_socket);
+                throw exceptions::listen_socket_failure("Failed to start listening on the listening socket for \"" + this->hostname + "\"", true, __FILE__, __LINE__ - 4, __FUNCTION__);
             }
             this->listening = true;
         }
@@ -835,16 +869,14 @@ namespace networking {
         FD_ZERO(&ready);
         this->max_socket = invalid_socket;
         for (auto client = this->clients.begin(); client NOT this->clients.end(); client++) {
-            if (client->first > this->max_socket) {
-                this->max_socket = client->first;
-            }
+            this->max_socket = (client->first > this->max_socket) ? client->first : this->max_socket;
             FD_SET(client->first, &ready);
         }
-        
         if (select(this->max_socket + 1, &ready, 0, 0, &this->timeout) < 0) {
+            std::cout << "this->max_socket is " << this->max_socket << std::endl;
             (this->del_on_except) ? freeaddrinfo(this->connect_address) : (void) 0;
             (not this->was_init) ? uninitialize_network() : true;
-            throw exceptions::select_failure("Failed to select the connection sockets that are ready to be read from", true, __FILE__, __LINE__ - 3, __FUNCTION__);
+            throw exceptions::select_failure("Failed to select the connection sockets that are ready to be read from " + std::string(strerror(get_socket_error())), true, __FILE__, __LINE__ - 4, __FUNCTION__);
         }
         std::set<network_structures::connected_host::client> the_answer;
 
@@ -1089,7 +1121,7 @@ namespace networking {
 
 
     bool network_structures::tcp_client::create_certificate() {
-        if (this->secure_) {
+        if (this->secure_ and this->certificate == null) {
             this->certificate = SSL_get_peer_certificate(this->secure_sockets_layer);
             if (not this->certificate) {
                 throw exceptions::certificate_error("Failed to create the connection certificate for the connection to the server", true, __FILE__, __LINE__ - 2, __FUNCTION__);
