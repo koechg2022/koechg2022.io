@@ -1,0 +1,43 @@
+
+
+
+* {
+    box-sizing : border-box;
+}
+
+
+
+
+
+body {
+    /* 0.25turn will rotate counterclockwise a quarter of a full spin*/
+    background-image : radial-gradient(
+        at top left,
+        #fff 0%,
+        #877687 12%,
+        #c279c5 25%,
+        #ea76ee 37%,
+        #d1a1e3 50%,
+        #9a81d5 62%,
+        #c5e3a9 75%,
+        #eec490 87%,
+        #fbb7b7 100%
+    );
+    background-repeat : no-repeat;
+    overflow : hidden;
+    margin : 0;
+    height : 100vh;
+    width : 100vw;
+}
+
+body nav ul {
+    list-style-type: none;
+}
+
+body nav ul li {
+    padding : 15px 2px;
+}
+
+body nav ul li i {
+    padding-right : 10px;
+}
