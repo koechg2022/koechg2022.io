@@ -67,14 +67,14 @@ std::map<std::string, std::string> parse_message(std::string message) {
         // std::cout << line << std::endl;
         pos = line.find_first_of(":");
         if (pos == std::string::npos) {
-            if (line.contains("GET")) {
+            if (line.find("GET") != line.length()) {
                 pos = line.find_first_of(" ");
                 key = line.substr(0, pos);
                 value = line.substr(pos);
                 string_functions::strip(key, " ");
                 string_functions::strip(value, " ");
             }
-            else if (line.contains("PULL")) {
+            else if (line.find("PULL") != line.length()) {
                 pos = line.find_first_of(" ");
                 key = line.substr(0, pos);
                 value = line.substr(pos);
@@ -138,7 +138,7 @@ bool send_resources(networking::network_structures::connected_host::client clien
         return false;
     }
 
-    if (path.contains("../")) {
+    if (path.find("../") != path.length()) {
         message = 
                 "HTTP/1.1 404 Not Found\r\n"
                 "Connection: close\r\n"
@@ -148,7 +148,7 @@ bool send_resources(networking::network_structures::connected_host::client clien
     }
 
     #if defined(crap_os)
-        string_functions::replace_all(path, "/", '\\');
+        string_functions::replace_all(path, "/", "\\");
     #endif
 
     string_functions::replace_all(path, "%20", " ");
@@ -167,7 +167,7 @@ bool send_resources(networking::network_structures::connected_host::client clien
     the_content_type = "";
     index = path.find_last_of(".");
 
-    if (index == std::string::npos) {
+    if (index > path.length()) {
         // There are no extensions
         return false;
     }

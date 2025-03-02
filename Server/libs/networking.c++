@@ -266,20 +266,20 @@ namespace networking {
 
             all_adapters = NULL;
             DWORD memory_size = 20000;
-            std::string this_line;
+            int this_line;
             
             while (not all_adapters) {
                 
                 all_adapters = (ifaddrs_adapter_type) malloc(memory_size);
-                this_line = std::to_string(__LINE__ prev);
+                this_line = __LINE__ - 1;
 
                 if (not all_adapters) {
                     (clean_on_except) ? uninitialize_network() : true;
-                    throw exceptions::memory_exception("Failed to aquire " + std::to_string(memory_size) + " bytes of memory", true, __FILE__, line, __FUNCTION__);
+                    throw exceptions::memory_exception("Failed to aquire " + std::to_string(memory_size) + " bytes of memory", true, __FILE__, this_line, __FUNCTION__);
                 }
 
-                int resp = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAGS_INCLUDE_PREFIX, 0, all_adapters, &memory_size);
-                this_line = std::to_string(__LINE__ prev);
+                int resp = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, 0, all_adapters, &memory_size);
+                this_line = __LINE__ - 1;
 
                 if (resp is ERROR_BUFFER_OVERFLOW) {
                     ifaddrs_free_adapters(all_adapters);
@@ -292,7 +292,7 @@ namespace networking {
                 else {
                     (clean_on_except) ? uninitialize_network() : true;
                     ifaddrs_free_adapters(all_adapters);
-                    throw exceptions::unexpected_exception("An unexpected exception occured while trying to retrieve this machine's network adapter information", true, __FILE__, line, __FUNCTION__);
+                    throw exceptions::unexpected_exception("An unexpected exception occured while trying to retrieve this machine's network adapter information", true, __FILE__, this_line, __FUNCTION__);
                 }
 
             }
@@ -406,7 +406,7 @@ namespace networking {
 
         #ifdef _WIN32
             u_long mode = 1;  // 1 to enable non-blocking socket
-            ioctlsocket(sock, FIONBIO, &mode);
+            ioctlsocket(the_socket, FIONBIO, &mode);
         #else
             int flags = fcntl(the_socket, F_GETFL, 0);
             fcntl(the_socket, F_SETFL, flags | O_NONBLOCK);
@@ -700,7 +700,11 @@ namespace networking {
                 (not this->was_init) ? uninitialize_network() : true;
                 throw exceptions::create_socket_failure("Failed to create connection socket for host " + this->hostname + ". Error number " + std::to_string(get_socket_error()), true, __FILE__, __LINE__ - 4, __FUNCTION__);
             }
-            int reuse = 1;
+            #if defined(unix_os)
+                int reuse = 1;
+            #else
+                char reuse = 1;
+            #endif
             if (setsockopt(this->connect_socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) {
                 std::fprintf(stderr, "Failed to set reusable socket.\n");
             }
@@ -836,10 +840,16 @@ namespace networking {
             client.portvalue = "";
         }
 
-        if (client.address_info.ss_family and client.address_info.ss_len) {
-            client.address_info.ss_family = 0;
-            client.address_info.ss_len = 0;
-        }
+        #if defined(unix_os)
+            if (client.address_info.ss_family and client.address_info.ss_len) {
+                client.address_info.ss_family = 0;
+                client.address_info.ss_len = 0;
+            }
+        #else
+            if (client.address_info.ss_family) {
+                client.address_info.ss_family = 0;
+            }
+        #endif
 
         if (this->clients.contains(client.connected_socket)) {
             this->clients.erase(client.connected_socket);
@@ -851,10 +861,13 @@ namespace networking {
             }
         }
         
+        
         return not valid_socket(client.connected_socket) and 
                 not valid_secure_socket(client.secure_socket) and
                     not this->clients.contains(client.connected_socket) and
+                    #if defined(unix_os)
                         client.address_info.ss_len == 0 and 
+                    #endif
                             client.address_info.ss_family == 0 and 
                                 client.hostname.empty() and 
                                     client.portvalue.empty();
@@ -1663,7 +1676,7 @@ namespace networking {
 
             std::printf("server_path is '%s'\n", server_path.c_str());
             #if defined(crap_os)
-                string_functions::replace_all("/", "\\");
+                string_functions::replace_all(server_path, "/", "\\");
             #endif
 
             if (not this->file_exists(this->directory, server_path)) {
@@ -1957,7 +1970,11 @@ namespace networking {
                 for (auto client = clients.begin(); client != clients.end(); client++) {
                     std::printf("%s:\n", client->hostname.c_str());
                     std::printf("\tPort: %s\n", client->portvalue.c_str());
-                    std::printf("\tConnection socket: %d\n", client->connected_socket);
+                    #if defined(unix_os)
+                        std::printf("\tConnection socket: %d\n", client->connected_socket);
+                    #else
+                    std::printf("\tConnection socket: %llu\n", client->connected_socket);
+                    #endif
                 }
             }
 

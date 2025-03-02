@@ -18,7 +18,7 @@ int misc_functions::get_terminal_width() {
     #else
         CONSOLE_SCREEN_BUFFER_INFO cbsi;
         GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbsi);
-        the_answer = sbsi.srWindow.Right - cbsi.srWindow.Left + 1;
+        the_answer = cbsi.srWindow.Right - cbsi.srWindow.Left + 1;
     #endif
     return the_answer;
 }
@@ -33,7 +33,7 @@ int misc_functions::get_terminal_height() {
     #else
         CONSOLE_SCREEN_BUFFER_INFO cbsi;
         GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbsi);
-        the_answer = sbsi.srWindow.Bottom - cbsi.srWindow.Top + 1;
+        the_answer = cbsi.srWindow.Bottom - cbsi.srWindow.Top + 1;
     #endif
     return the_answer;
 }

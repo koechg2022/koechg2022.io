@@ -13,14 +13,13 @@
         namespace {
             #if defined(crap_os)
                 bool is_init = false;
+                const std::string rel_adapter = "Wi-Fi 3";
             #else
                 const bool is_init = true;
                 #if defined(mac_os)
                     const std::string rel_adapter = "en0";
                 #elif
                     const std::string rel_adapter = "enp0s8";
-                #else
-                    const std::string rel_adapter = "Wi-Fi 3"
                 #endif
             #endif
             const std::string ip6_regex_pattern = std::string("^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}") + 
