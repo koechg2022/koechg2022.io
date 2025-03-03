@@ -20,7 +20,7 @@ nav {
 
 nav div#logo {
     grid-column: 1;
-    background-image: url('../files/Logo.png');
+    background-image: url('./../files/Logo.png');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;

@@ -11,7 +11,7 @@ body {
     /* background-image : url('../files/Savannah tree.jpg'); */
     /* background-image : url('../files/Desert road.jpg'); */
     /* background-image : url('../files/coding background.avif'); */
-    background-image : url('../files/boeing787 window.avif');
+    background-image : url('./../files/boeing787 window.avif');
 
     background-repeat : no-repeat;
     background-size : cover;

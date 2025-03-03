@@ -4,14 +4,14 @@
 
 body {
     
-    /* background-image : url('../files/geoffrey on throne.JPG'); */
-    /* background-image : url('../files/dutch bridge.avif'); */
-    /* background-image : url('../files/dutch windmill 2.avif'); */
-    /* background-image : url('../files/geoff anna and her roommate.JPG'); */
-    /* background-image : url('../files/dutch windmill with sky.avif'); */
-    /* background-image : url('../files/hot air balloons.avif'); */
-    /* background-image : url('../files/Savannah tree.jpg'); */
-    background-image : url('../files/Desert road.jpg');
+    /* background-image : url('./../files/geoffrey on throne.JPG'); */
+    /* background-image : url('./../files/dutch bridge.avif'); */
+    /* background-image : url('./../files/dutch windmill 2.avif'); */
+    /* background-image : url('./../files/geoff anna and her roommate.JPG'); */
+    /* background-image : url('./../files/dutch windmill with sky.avif'); */
+    /* background-image : url('./../files/hot air balloons.avif'); */
+    /* background-image : url('./../files/Savannah tree.jpg'); */
+    background-image : url('./../files/Desert road.jpg');
 
     background-repeat : no-repeat;
     background-size : cover;
