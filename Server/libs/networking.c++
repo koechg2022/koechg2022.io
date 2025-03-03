@@ -1826,87 +1826,17 @@ namespace networking {
         // }
 
         if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
-            server_path = headers[headers[METHOD]].substr(0, headers[headers[METHOD]].find_first_of("HTTP"));
-            string_functions::strip(server_path, " ");
-            if (string_functions::same_char(server_path[0], '/') and server_path.length() > 1) {
-                server_path = server_path.substr(1);
-            }
-
-            pos = server_path.find_first_of(this->directory);
-            if (pos != std::string::npos and (server_path.compare(0, this->directory.length(), this->directory) == 0)) {
-                server_path = server_path.substr(this->directory.length());
-                if (server_path.empty()) {
-                    server_path = "/";
-                }
-                else {
-                    // There is something more to server_path
-
-                }
-            }
-
+            std::printf("'%s'\n", headers[headers[METHOD]].c_str());
+            server_path = headers[headers[METHOD]];
+            
         }
+
         else {
-            server_path = "/";
-        }
-        
-        // std::printf("Raw server_path is :%s\n", server_path.c_str());
-        string_functions::strip(server_path, " ");
-        
-
-        for (const auto& [encoded, decoded] : this->url_decode_map) {
-            string_functions::replace_all(server_path, encoded, decoded);
-        }
-
-        if (string_functions::same_char(server_path[server_path.length() - 1], 'J', false)) {
-            server_path = server_path + "PG";
-        }
-
-        else if (string_functions::same_char(server_path[server_path.length() - 1], 'j', false)) {
-            server_path = server_path + "pg";
-        }
-        
-        if (string_functions::same_string("/", server_path)) {
             server_path = "html/homepage.html";
         }
+        std::printf("server_path is '%s'\n", server_path.c_str());
 
-        else if (server_path.contains("../")) {
-            std::fprintf(stderr, "Illegal path '%s' request.\n", server_path.c_str());
-            this->send_400(client, "Illega path '" + server_path + "' request");
-            return false;
-        }
-
-        #if defined(crap_os)
-            string_functions::replace_all(server_path, "/", "\\");
-        #endif
-
-        if (string_functions::same_string(server_path, "favicon.ico")) {
-            if (not this->file_exists(this->directory, server_path)) {
-                this->create_favicon_file();
-            }
-        }
-        
-        if(not this->file_exists(this->directory, server_path)) {
-            std::fprintf(stderr, "No file '%s' found.\n", (this->directory + server_path).c_str());
-            this->send_404(client, "No file '" + this->directory + server_path + "' found");
-            return false;
-        }
-        
-        // std::printf("Complete path is '%s%s'\n", this->directory.c_str(), server_path.c_str());
-        index = server_path.find_first_of(".");
-
-        if (index == std::string::npos) {
-            content_type = this->default_content_type;
-        }
-        else if (index < server_path.length()) {
-            message = server_path.substr(index);
-            if (not this->content_options.contains(message)) {
-                std::fprintf(stderr, "No extension '%s' found\n", message.c_str());
-                this->send_404(client, "No extension " + message + " found");
-                return false;
-            }
-            content_type = this->content_options[message];
-            message = "";
-        }
+        return false;
 
         file_length = this->file_size(this->directory, server_path);
         
