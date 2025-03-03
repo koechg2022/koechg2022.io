@@ -4,3 +4,4 @@ Server/.cache
 Client/files/*
 .cache/*
 build/*
+python.py
