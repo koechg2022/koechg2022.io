@@ -15,6 +15,8 @@
             const struct timeval default_timeout = (const struct timeval) {0, 100000};
         }
 
+        const std::string DIRECTORY = "Directory", FILE = "File";
+
         /**
             @brief Checks if the character passed in is uppercase.
             @param c (const char) : the character to check it's case.
@@ -210,6 +212,9 @@
 
 
         std::map<std::string, std::string> get_file_data(const std::string& file_name);
+
+        
+        std::map<std::string, std::vector<std::string> > get_directory_content(const std::string& file_name);
 
     }
     

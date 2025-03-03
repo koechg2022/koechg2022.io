@@ -193,5 +193,19 @@ namespace string_functions {
         return the_answer;
     }
 
+    std::map<std::string, std::vector<std::string> > get_directory_content(const std::string& file_name) {
+        
+
+        std::map<std::string, std::vector<std::string> > the_answer = {
+                        {DIRECTORY, std::vector<std::string>() },
+                        {FILE, std::vector<std::string>() }
+                        };
+        
+        for (const auto& entry : std::filesystem::directory_iterator(file_name)) {
+            the_answer[(entry.is_directory()) ? DIRECTORY : FILE].push_back(entry.path().filename());
+        }
+        return the_answer;
+    }
+
 
 }

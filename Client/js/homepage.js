@@ -22,7 +22,8 @@ const file_directory = `files`;
 const navigation = document.getElementById('nav_ul').querySelectorAll('li');
 
 navigation.forEach((navigation) => {
-    if (navigation.innerText.toLowerCase() === 'home') {
+    let target_url = `${navigation.innerText.toLowerCase()}.html`;
+    if (navigation.innerText.toLowerCase() === 'homepage') {
         navigation.title = `Navigate to my homepage`;
     }
     else if (navigation.innerText.toLowerCase() === 'about') {
@@ -46,6 +47,9 @@ navigation.forEach((navigation) => {
     else if (navigation.innerText.toLowerCase() === 'contact') {
         navigation.title = `Reach out to me`;
     }
+    navigation.addEventListener('click', () => {
+        window.location.href = target_url;
+    });
 });
 
 const page_title = document.querySelector('.page_title');

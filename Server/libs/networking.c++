@@ -3,6 +3,8 @@
 
 
 #include "networking.h++"
+#include <__filesystem/directory_iterator.h>
+#include <filesystem>
 
 
 
@@ -1814,6 +1816,15 @@ namespace networking {
         char read[4 * kilo_byte];
         size_t pos;
 
+        // std::map<std::string, std::vector<std::string> > directory_content = string_functions::get_directory_content(this->directory);
+        // for (auto thing = directory_content.begin(); thing != directory_content.end(); thing++) {
+        //     std::printf("%s:\n\t", thing->first.c_str());
+        //     for (auto data = thing->second.begin(); data != thing->second.end(); data++) {
+        //         std::printf("%s ", data->c_str());
+        //     }
+        //     std::printf("\n");
+        // }
+
         if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
             server_path = headers[headers[METHOD]].substr(0, headers[headers[METHOD]].find_first_of("HTTP"));
             string_functions::strip(server_path, " ");
@@ -1823,11 +1834,13 @@ namespace networking {
 
             pos = server_path.find_first_of(this->directory);
             if (pos != std::string::npos and (server_path.compare(0, this->directory.length(), this->directory) == 0)) {
-                // std::printf("server_path is '%s'\n", server_path.c_str());
                 server_path = server_path.substr(this->directory.length());
-                // std::printf("server_path is '%s'\n", server_path.c_str());
                 if (server_path.empty()) {
                     server_path = "/";
+                }
+                else {
+                    // There is something more to server_path
+
                 }
             }
 
