@@ -218,13 +218,13 @@
 
 
         template <typename data_> bool contains(std::map<std::string, data_>& to_search, const std::string& to_find_key, bool ignore_case = true) {
-        for (auto pair = to_search.begin(); pair != to_search.end(); pair++) {
-            if (same_string(pair->first, to_find_key, ignore_case)) {
-                return true;
+            for (auto pair = to_search.begin(); pair != to_search.end(); pair++) {
+                if (same_string(pair->first, to_find_key, ignore_case)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
-    }
 
     }
     
