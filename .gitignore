@@ -1,4 +1,6 @@
 Server/build
 Server/objects/*
 Server/.cache
+Client/files/*
+.cache/*
 build/*
