@@ -21,33 +21,39 @@ const file_directory = `files`;
 
 const navigation = document.getElementById('nav_ul').querySelectorAll('li');
 
-navigation.forEach((navigation) => {
-    let target_url = `${navigation.innerText.toLowerCase()}.html`;
-    if (navigation.innerText.toLowerCase() === 'homepage') {
-        navigation.title = `Navigate to my homepage`;
+const logo = document.getElementById('logo');
+
+navigation.forEach((this_nav) => {
+    let target_url = `/Client/html/${this_nav.innerText.toLowerCase()}.html`;
+    if (this_nav.innerText.toLowerCase() === 'homepage') {
+        this_nav.title = `Navigate to my homepage`;
+        logo.title = `${this_nav.title}`;
+        logo.addEventListener('click', () => {
+            window.location.href = target_url;
+        });
     }
-    else if (navigation.innerText.toLowerCase() === 'about') {
-        navigation.title =  `About page. Learn a bit about Geoffrey`;
+    else if (this_nav.innerText.toLowerCase() === 'about') {
+        this_nav.title =  `About page. Learn a bit about Geoffrey`;
     }
-    else if (navigation.innerText.toLowerCase() === 'github') {
-        navigation.title = `Check out my projects`;
+    else if (this_nav.innerText.toLowerCase() === 'github') {
+        this_nav.title = `Check out my projects`;
     }
-    else if (navigation.innerText.toLowerCase() === 'book recs') {
-        navigation.title = `Check out the books I'm reading and my reviews of them`;
+    else if (this_nav.innerText.toLowerCase() === 'book recs') {
+        this_nav.title = `Check out the books I'm reading and my reviews of them`;
     }
-    else if (navigation.innerText.toLowerCase() === 'photography') {
-        navigation.title = `Check out my photographs`;
+    else if (this_nav.innerText.toLowerCase() === 'photography') {
+        this_nav.title = `Check out my photographs`;
     }
-    else if (navigation.innerText.toLowerCase() === 'travel') {
-        navigation.title = `Check out my travel photos and blogs`;
+    else if (this_nav.innerText.toLowerCase() === 'travel') {
+        this_nav.title = `Check out my travel photos and blogs`;
     }
-    else if (navigation.innerText.toLowerCase() === 'hobbies') {
-        navigation.title = `Swimming, Football, Guitar, Learning...`;
+    else if (this_nav.innerText.toLowerCase() === 'hobbies') {
+        this_nav.title = `Swimming, Football, Guitar, Learning...`;
     }
-    else if (navigation.innerText.toLowerCase() === 'contact') {
-        navigation.title = `Reach out to me`;
+    else if (this_nav.innerText.toLowerCase() === 'contact') {
+        this_nav.title = `Reach out to me`;
     }
-    navigation.addEventListener('click', () => {
+    this_nav.addEventListener('click', () => {
         window.location.href = target_url;
     });
 });

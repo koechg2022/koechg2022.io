@@ -1826,17 +1826,44 @@ namespace networking {
         // }
 
         if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
-            std::printf("'%s'\n", headers[headers[METHOD]].c_str());
+            // std::printf("'%s'\n", headers[headers[METHOD]].c_str());
             server_path = headers[headers[METHOD]];
-            
+            pos = server_path.find_first_of("HTTP");
+            if (pos < server_path.length()) {
+                server_path = server_path.substr(0, pos);
+            }
+            string_functions::strip(server_path, " ");
+            if (string_functions::same_string(server_path, "/")) {
+                server_path = this->directory + "html/homepage.html";
+            }
+            else if (server_path.length() > 1 and server_path[0] == '/') {
+                server_path = server_path.substr(1);
+            }
         }
 
         else {
-            server_path = "html/homepage.html";
+            server_path = this->directory + "html/homepage.html";
         }
+
+        if ((pos = server_path.find(this->directory)) == 0) {
+            std::printf("pos is %lu\n", pos);
+            // pos is at 0
+            server_path = server_path.substr(this->directory.length());
+        }
+
+        for (const auto& [encoded, decoded] : this->url_decode_map) {
+            string_functions::replace_all(server_path, encoded, decoded);
+        }
+        
         std::printf("server_path is '%s'\n", server_path.c_str());
 
-        return false;
+
+        if (not this->file_exists(this->directory, server_path)) {
+            std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
+            return false;
+        }
+
+
 
         file_length = this->file_size(this->directory, server_path);
         
