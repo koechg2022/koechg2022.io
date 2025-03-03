@@ -118,7 +118,7 @@ const page_titles = {
     contact_page : [`How to reach me`]
 };
 
-page_title.innerText = page_titles.home_page[Math.floor(Math.random() * page_titles.home_page.length)];
+page_title.innerText = page_titles[current_page_name()][Math.floor(Math.random() * page_titles[current_page_name()].length)];
 
 
 function same_string(first_string, second_string, ignore_case = true) {
@@ -179,5 +179,11 @@ async function get_file_data(file_name) {
         console.error(`Ya it epically failed... Error ${failure.text}`);
         return "";
     });
+    return the_answer;
+}
+
+function current_page_name() {
+    const path = window.location.pathname;
+    const the_answer = path.split("/").pop().replace(/\.html$/, '');;
     return the_answer;
 }
