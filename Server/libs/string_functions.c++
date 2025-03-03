@@ -3,6 +3,7 @@
 
 
 
+
 namespace string_functions {
 
     bool is_caps(const char c) {
@@ -157,5 +158,40 @@ namespace string_functions {
             pos += replace_with.length(); // Move past the replacement
         }
     }
+
+
+    std::map<std::string, std::string> get_file_data(const std::string& file_name) {
+        std::map<std::string, std::string> the_answer;
+
+        if (!std::filesystem::exists(std::filesystem::path(file_name).lexically_normal())) {
+            std::cerr << "No file '" << file_name << "' found\n";
+            return the_answer;
+        }
+
+        std::ifstream open_file(file_name);
+        if (not open_file.is_open()) {
+            std::cerr << "Could not open file '" << file_name << "'" << std::endl;
+            return the_answer;
+        }
+
+        std::string line, key, value;
+        size_t delimiter;
+        while (std::getline(open_file, line)) {
+            delimiter = line.find_first_of(':');
+            if (delimiter != std::string::npos) {
+                key = line.substr(0, delimiter);
+                value = line.substr(delimiter + 1);
+
+                strip(key, " ");
+                strip(value, " ");
+                strip(value, "\n");
+
+                the_answer[key] = value;
+            }
+        }
+        open_file.close();
+        return the_answer;
+    }
+
 
 }

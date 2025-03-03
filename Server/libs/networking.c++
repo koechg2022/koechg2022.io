@@ -1584,8 +1584,7 @@ namespace networking {
     }
 
     network_structures::http_server::http_server(bool secure, int listen_limit) {
-        // network_structures::tcp_server server = network_structures::tcp_server("", DEFAULT_PORT, listen_limit, 0, 100000, true, secure);
-        // this->server_connection = server;
+        this->content_options = string_functions::get_file_data("Client/files/content_options.dat");
         this->server_connection = network_structures::tcp_server("", DEFAULT_PORT, listen_limit, 0, 100000, true, secure);
     }
 

@@ -694,7 +694,10 @@
 
                     tcp_server server_connection;
 
-                    std::map<std::string, std::string> content_options = {
+                    std::map<std::string, std::string> content_options = 
+                    {
+                        {".avif", "image/avif"},
+                        {".AVIF", "image/avif"},
                         {".css", "text/css"},
                         {".CSS", "text/css"},
                         {".csv", "text/csv"},

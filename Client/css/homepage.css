@@ -14,12 +14,12 @@ html {
 body {
     
     /* background-image : url('../files/geoffrey on throne.JPG'); */
-    /* background-image : url('../files/dutch bridge.avif'); */
+    background-image : url('../files/dutch bridge.avif');
     /* background-image : url('../files/dutch windmill 2.avif'); */
-    background-image : url('../files/geoff anna and her roommate.JPG');
+    /* background-image : url('../files/geoff anna and her roommate.JPG'); */
     /* background-image : url('../files/dutch windmill with sky.avif'); */
     /* background-image : url('../files/hot air balloons.avif'); */
-    /* background-image : url('../files/multiple dutch windmills.avif'); */
+    /* background-image : url('../files/multiple dutch windmills.avif'); */ /*Has unsplash water mark */ 
     /* background-image : url('../files/Savannah tree.jpg'); */
 
     background-repeat : no-repeat;
@@ -56,7 +56,7 @@ body nav ul li {
 }
 
 body nav ul li:hover {
-    color : rgb(1, 1, 1);
+    color : rgb(242, 240, 240);
     transform : scale(1.3);
 }
 

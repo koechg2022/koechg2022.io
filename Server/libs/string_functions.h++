@@ -208,6 +208,9 @@
          */
         void replace_all(std::string& the_string, const std::string to_replace, const std::string replace_with);
 
+
+        std::map<std::string, std::string> get_file_data(const std::string& file_name);
+
     }
     
 
