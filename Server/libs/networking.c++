@@ -1153,7 +1153,6 @@ namespace networking {
     bool network_structures::tcp_server::close_connection(const socket_type to_close) {
         bool the_answer = false;
         if (this->clients.contains(to_close)) {
-            this->max_socket = invalid_socket;
             for (auto client = this->clients.begin(); client != this->clients.end(); client++) {
                 if (to_close == client->first) {
                     // This is the client to be removed
@@ -1162,8 +1161,12 @@ namespace networking {
                     (this->secure_) ? SSL_free(client->second.secure_socket) : (void) 0;
                     this->clients.erase(client->first);
                     the_answer = true;
-                    continue;
+                    break;
                 }
+            }
+
+            this->max_socket = invalid_socket;
+            for (auto client = this->clients.begin(); client != this->clients.end(); client++) {
                 this->max_socket = (client->first > this->max_socket) ? client->first : this->max_socket;
                 this->max_secure_socket = (client->second.secure_socket > this->max_secure_socket) ? client->second.secure_socket : this->max_secure_socket;
             }
@@ -1174,7 +1177,6 @@ namespace networking {
 
     bool network_structures::tcp_server::close_connection(const std::string hostname, const std::string portvalue) {
         bool the_answer = false;
-        this->max_socket = invalid_socket;
         for (auto client = this->clients.begin(); client != this->clients.end(); client++) {
             if (string_functions::same_string(client->second.hostname, hostname) and string_functions::same_string(client->second.portvalue, portvalue)) {
                 // This is the client to be removed
@@ -1185,6 +1187,10 @@ namespace networking {
                 the_answer = true;
                 continue;
             }
+        }
+
+        this->max_socket = invalid_socket;
+        for (auto client = this->clients.begin(); client != this->clients.end(); client++) {
             this->max_socket = (client->first > this->max_socket) ? client->first : this->max_socket;
             this->max_secure_socket = (client->second.secure_socket > this->max_secure_socket) ? client->second.secure_socket : this->max_secure_socket;
         }
@@ -1588,6 +1594,10 @@ namespace networking {
         this->server_connection = network_structures::tcp_server("", DEFAULT_PORT, listen_limit, 0, 100000, true, secure);
     }
 
+    network_structures::http_server::~http_server() {
+        this->content_options.clear();
+    }
+
     bool network_structures::http_server::send_404(network_structures::connected_host::client& client, const std::string message) {
         if (this->server_connection) {
             const std::string msg = "HTTP/1.1 404 Not Found" + this->ending +
@@ -1807,16 +1817,16 @@ namespace networking {
             server_path = headers[headers[METHOD]].substr(0, headers[headers[METHOD]].find_first_of("HTTP"));
             string_functions::strip(server_path, " ");
             if (string_functions::same_char(server_path[0], '/') and server_path.length() > 1) {
-                std::printf("'%s' : Found the first char to be a forward slash. total length is %lu\n", server_path.c_str(), server_path.length());
+                // std::printf("'%s' : Found the first char to be a forward slash. total length is %lu\n", server_path.c_str(), server_path.length());
                 server_path = server_path.substr(1);
-                std::printf("'%s' : Total length is %lu\n", server_path.c_str(), server_path.length());
+                // std::printf("'%s' : Total length is %lu\n", server_path.c_str(), server_path.length());
             }
         }
         else {
             server_path = "/";
         }
         
-        std::printf("Raw server_path is :%s\n", server_path.c_str());
+        // std::printf("Raw server_path is :%s\n", server_path.c_str());
         string_functions::strip(server_path, " ");
         
 
@@ -1858,7 +1868,7 @@ namespace networking {
             return false;
         }
         
-        std::printf("Complete path is '%s%s'\n", this->directory.c_str(), server_path.c_str());
+        // std::printf("Complete path is '%s%s'\n", this->directory.c_str(), server_path.c_str());
         index = server_path.find_first_of(".");
 
         if (index == std::string::npos) {
@@ -1946,7 +1956,6 @@ namespace networking {
         }
 
         open_file.close();
-        std::printf("Sent %d bytes of %zu bytes.\n", total, file_length);
         return total == file_length;
 
     }
@@ -1962,6 +1971,7 @@ namespace networking {
                             this->server_connection.port_value().c_str());
 
         std::set<networking::network_structures::connected_host::client> clients;
+        std::map<std::string, std::string> headers;
         std::string message;
         char message_buffer[2 * kilo_byte];
         ssize_t bytes;
@@ -1973,12 +1983,12 @@ namespace networking {
                 clients = this->server_connection.get_all_clients();
                 std::printf("There is a new connection. Connected client%s:\n", (clients.size() > 1) ? "s are" : " is");
                 for (auto client = clients.begin(); client != clients.end(); client++) {
-                    std::printf("%s:\n", client->hostname.c_str());
-                    std::printf("\tPort: %s\n", client->portvalue.c_str());
+                    std::printf("\t%s:\n", client->hostname.c_str());
+                    std::printf("\t\tPort: %s\n", client->portvalue.c_str());
                     #if defined(unix_os)
-                        std::printf("\tConnection socket: %d\n", client->connected_socket);
+                        std::printf("\t\tConnection socket: %d\n", client->connected_socket);
                     #else
-                    std::printf("\tConnection socket: %llu\n", client->connected_socket);
+                    std::printf("\t\tConnection socket: %llu\n", client->connected_socket);
                     #endif
                 }
             }
@@ -1996,12 +2006,17 @@ namespace networking {
                         continue;
                     }
 
-                    std::printf("Message from '%s':\n\n%.*s\n\n", client->hostname.c_str(), (int) bytes, message_buffer);
+                    // std::printf("Message from '%s':\n\n%.*s\n\n", client->hostname.c_str(), (int) bytes, message_buffer);
 
-                    if (not this->serve_resource(*client, this->parse_message(std::string(message_buffer, bytes)))) {
-                        std::printf("Closing connection to client '%s'.\n", client->hostname.c_str());
-                        this->server_connection.close_connection(client->connected_socket);
-                        continue;
+                    headers = this->parse_message(std::string(message_buffer, bytes));
+                    if (not headers.empty()) {
+                        if (headers.contains(METHOD)) {
+                            if (not this->serve_resource(*client, headers)) {
+                                std::printf("Closing connection to client '%s'.\n", client->hostname.c_str());
+                                this->server_connection.close_connection(client->connected_socket);
+                                continue;
+                            }
+                        }
                     }
                 }
             }
@@ -2017,8 +2032,41 @@ namespace networking {
                     this->disconnect();
                 }
 
+                else if (string_functions::same_string(message, "list_clients()") or string_functions::same_string(message, "lc")) {
+                    clients = this->server_connection.get_all_clients();
+                    (clients.size() > 0) ? std::printf("------------------------------------------------------\nConnected clients:\n") : 0;
+                    if (clients.empty()) {
+                        std::printf("\n\tThere are no connected clients.\n\n");
+                    }
+                    for (auto client = clients.begin(); client != clients.end(); client++) {
+                        std::printf("\t%s, ", client->hostname.c_str());
+                        std::printf("\t%s,", client->portvalue.c_str());
+                        std::printf("\t%s\n", std::to_string(client->connected_socket).c_str());
+                        std::printf("\t---------------------------------------------------\n");
+                    }
+                }
+
+                else if (string_functions::same_string(message, "disconnect_client()") or string_functions::same_string(message, "dc")) {
+                    // std::printf("UNDER CONSTRUCTION.\n");
+                    message = string_functions::get_input("Client to disconnect: ");
+                    clients = this->server_connection.get_all_clients();
+                    for (auto client = clients.begin(); client != clients.end(); client++) {
+                        if (string_functions::same_string(client->hostname, message) 
+                                                        or 
+                            string_functions::same_string(client->portvalue, message) 
+                                                        or
+                            string_functions::same_string(message, std::to_string(client->connected_socket))) {
+                                std::printf("FOUND. About to close connection to '%s'\n", client->hostname.c_str());
+                                this->server_connection.close_connection(client->connected_socket);
+                        }
+                    }
+                }
+
                 else {
                     std::printf("Unrecognized server command... '%s'\n", message.c_str());
+                    std::printf("exists() to close the server.\n");
+                    std::printf("list_clients() to list all connected clients.\n");
+                    std::printf("disconnect_client() to disconnect a connected client\n");
                 }
             }
         }

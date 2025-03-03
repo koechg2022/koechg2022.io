@@ -694,39 +694,39 @@
 
                     tcp_server server_connection;
 
-                    std::map<std::string, std::string> content_options = 
-                    {
-                        {".avif", "image/avif"},
-                        {".AVIF", "image/avif"},
-                        {".css", "text/css"},
-                        {".CSS", "text/css"},
-                        {".csv", "text/csv"},
-                        {".CSV", "text/csv"},
-                        {".gif", "image/gif"},
-                        {".GIF", "image/gif"},
-                        {".htm", "text/html"},
-                        {".HTM", "text/html"},
-                        {".html", "text/html"},
-                        {".HTML", "text/html"},
-                        {".ico", "image/x-icon"},
-                        {".ICO", "image/x-icon"},
-                        {".jpeg", "image/jpeg"},
-                        {".JPEG", "image/jpeg"},
-                        {".jpg", "image/jpeg"},
-                        {".JPG", "image/jpeg"},
-                        {".js", "application/javascript"},
-                        {".JS", "application/javascript"},
-                        {".json", "applicatoin/json"},
-                        {".JSON", "applicatoin/json"},
-                        {".png", "image/png"},
-                        {".PNG", "image/png"},
-                        {".pdf", "application/pdf"},
-                        {".PDF", "application/pdf"},
-                        {".svg", "image/svg+xml"},
-                        {".SVG", "image/svg+xml"},
-                        {".txt", "text/plain"},
-                        {".TXT", "text/plain"}
-                    };
+                    std::map<std::string, std::string> content_options;
+                    // {
+                    //     {".avif", "image/avif"},
+                    //     {".AVIF", "image/avif"},
+                    //     {".css", "text/css"},
+                    //     {".CSS", "text/css"},
+                    //     {".csv", "text/csv"},
+                    //     {".CSV", "text/csv"},
+                    //     {".gif", "image/gif"},
+                    //     {".GIF", "image/gif"},
+                    //     {".htm", "text/html"},
+                    //     {".HTM", "text/html"},
+                    //     {".html", "text/html"},
+                    //     {".HTML", "text/html"},
+                    //     {".ico", "image/x-icon"},
+                    //     {".ICO", "image/x-icon"},
+                    //     {".jpeg", "image/jpeg"},
+                    //     {".JPEG", "image/jpeg"},
+                    //     {".jpg", "image/jpeg"},
+                    //     {".JPG", "image/jpeg"},
+                    //     {".js", "application/javascript"},
+                    //     {".JS", "application/javascript"},
+                    //     {".json", "applicatoin/json"},
+                    //     {".JSON", "applicatoin/json"},
+                    //     {".png", "image/png"},
+                    //     {".PNG", "image/png"},
+                    //     {".pdf", "application/pdf"},
+                    //     {".PDF", "application/pdf"},
+                    //     {".svg", "image/svg+xml"},
+                    //     {".SVG", "image/svg+xml"},
+                    //     {".txt", "text/plain"},
+                    //     {".TXT", "text/plain"}
+                    // };
 
                     const std::map<std::string, std::string> url_decode_map = {
                         {"%20", " "}, {"%21", "!"}, {"%22", "\""}, {"%23", "#"}, {"%24", "$"},
@@ -766,6 +766,8 @@
                 public:
 
                     http_server(bool secure = false, int listen_limit = 10);
+
+                    ~http_server();
 
                     bool send_404(network_structures::connected_host::client& client, const std::string message = "Not Found");
 
