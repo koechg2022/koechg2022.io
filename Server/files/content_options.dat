@@ -1,0 +1,32 @@
+
+
+.avif : image/avif
+.AVIF : image/avif
+.css : text/css
+.CSS : text/css
+.csv : text/csv
+.CSV : text/csv
+.gif : image/gif
+.GIF : image/gif
+.htm : text/html
+.HTM : text/html
+.html : text/html
+.HTML : text/html
+.ico : image/x-icon
+.ICO : image/x-icon
+.jpeg : image/jpeg
+.JPEG : image/jpeg
+.jpg : image/jpeg
+.JPG : image/jpeg
+.js : application/javascript
+.JS : application/javascript
+.json : applicatoin/json
+.JSON : applicatoin/json
+.png : image/png
+.PNG : image/png
+.pdf : application/pdf
+.PDF : application/pdf
+.svg : image/svg+xml
+.SVG : image/svg+xml
+.txt : text/plain
+.TXT : text/plai

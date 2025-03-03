@@ -1592,7 +1592,7 @@ namespace networking {
     }
 
     network_structures::http_server::http_server(bool secure, int listen_limit) {
-        this->content_options = string_functions::get_file_data("Client/files/content_options.dat");
+        this->content_options = string_functions::get_file_data("Server/files/content_options.dat");
         this->server_connection = network_structures::tcp_server("", DEFAULT_PORT, listen_limit, 0, 100000, true, secure);
     }
 
@@ -1641,7 +1641,6 @@ namespace networking {
     }
 
     bool network_structures::http_server::serve_resource(network_structures::connected_host::client client, const std::string message_from_host) {
-        
 
 
         std::string message, content_type, server_path, buffer;
@@ -1653,7 +1652,6 @@ namespace networking {
         size_t pos;
 
         std::map<std::string, std::string> headers = this->parse_message(message_from_host);
-
         if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
             server_path = headers[headers[METHOD]];
             pos = server_path.find(" HTTP");
@@ -1681,63 +1679,13 @@ namespace networking {
             string_functions::replace_all(server_path, encoded, decoded);
         }
 
-        std::printf("Processed server_path is '%s'\n", server_path.c_str());
+        // std::printf("Processed server_path is '%s'\n", server_path.c_str());
 
         if (not this->file_exists(this->directory, server_path)) {
             this->send_404(client, "No directory " + server_path + " found");
             std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
             return false;
         }
-
-
-        // std::map<std::string, std::vector<std::string> > directory_content = string_functions::get_directory_content(this->directory);
-        // for (auto thing = directory_content.begin(); thing != directory_content.end(); thing++) {
-        //     std::printf("%s:\n\t", thing->first.c_str());
-        //     for (auto data = thing->second.begin(); data != thing->second.end(); data++) {
-        //         std::printf("%s ", data->c_str());
-        //     }
-        //     std::printf("\n");
-        // }
-
-        // if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
-            
-        //     server_path = headers[headers[METHOD]];
-        //     pos = server_path.find_first_of(" HTTP");
-        //     std::printf("raw server_path is '%s'\n", server_path.c_str());
-        //     if (pos < server_path.length()) {
-        //         server_path = server_path.substr(0, pos);
-        //     }
-        //     string_functions::strip(server_path, " ");
-        //     if (string_functions::same_string(server_path, "/")) {
-        //         server_path = this->directory + "html/homepage.html";
-        //     }
-        //     else if (server_path.length() > 1 and server_path[0] == '/') {
-        //         server_path = server_path.substr(1);
-        //     }
-        // }
-
-        // else {
-        //     server_path = this->directory + "html/homepage.html";
-        // }
-
-        // if ((pos = server_path.find(this->directory)) == 0) {
-        //     // std::printf("pos is %lu\n", pos);
-        //     // pos is at 0
-        //     server_path = server_path.substr(this->directory.length());
-        // }
-
-        // for (const auto& [encoded, decoded] : this->url_decode_map) {
-        //     string_functions::replace_all(server_path, encoded, decoded);
-        // }
-        
-        // // std::printf("server_path is '%s'\n", server_path.c_str());
-
-
-        // if (not this->file_exists(this->directory, server_path)) {
-        //     this->send_404(client, "No directory " + server_path + " found");
-        //     std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
-        //     return false;
-        // }
         
 
         file_length = this->file_size(this->directory, server_path);
@@ -1756,6 +1704,7 @@ namespace networking {
             buffer = headers[CONNECTION];
         }
 
+
         message = "Connection: " + buffer + this->ending;
         bytes = (this->server_connection.secure_host()) ? 
                     SSL_write(client.secure_socket, message.c_str(), message.length()) :
@@ -1769,6 +1718,14 @@ namespace networking {
                         send(client.connected_socket, message.c_str(), message.length(), 0);
 
         
+        content_type = this->default_content_type;
+
+        if (server_path.find_last_of(".") != std::string::npos) {
+            buffer = server_path.substr(server_path.find_last_of("."));
+            if (this->content_options.contains(buffer)) {
+                content_type = this->content_options[buffer];
+            }
+        }
 
 
         message = "Content-Type: " + content_type + this->ending;
@@ -1813,7 +1770,6 @@ namespace networking {
         open_file.close();
         return total == file_length;
 
-    
     }
 
     bool network_structures::http_server::serve_resource(network_structures::connected_host::client client, std::map<std::string, std::string> headers) {
@@ -1862,56 +1818,6 @@ namespace networking {
             std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
             return false;
         }
-
-
-        // std::map<std::string, std::vector<std::string> > directory_content = string_functions::get_directory_content(this->directory);
-        // for (auto thing = directory_content.begin(); thing != directory_content.end(); thing++) {
-        //     std::printf("%s:\n\t", thing->first.c_str());
-        //     for (auto data = thing->second.begin(); data != thing->second.end(); data++) {
-        //         std::printf("%s ", data->c_str());
-        //     }
-        //     std::printf("\n");
-        // }
-
-        // if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
-            
-        //     server_path = headers[headers[METHOD]];
-        //     pos = server_path.find_first_of(" HTTP");
-        //     std::printf("raw server_path is '%s'\n", server_path.c_str());
-        //     if (pos < server_path.length()) {
-        //         server_path = server_path.substr(0, pos);
-        //     }
-        //     string_functions::strip(server_path, " ");
-        //     if (string_functions::same_string(server_path, "/")) {
-        //         server_path = this->directory + "html/homepage.html";
-        //     }
-        //     else if (server_path.length() > 1 and server_path[0] == '/') {
-        //         server_path = server_path.substr(1);
-        //     }
-        // }
-
-        // else {
-        //     server_path = this->directory + "html/homepage.html";
-        // }
-
-        // if ((pos = server_path.find(this->directory)) == 0) {
-        //     // std::printf("pos is %lu\n", pos);
-        //     // pos is at 0
-        //     server_path = server_path.substr(this->directory.length());
-        // }
-
-        // for (const auto& [encoded, decoded] : this->url_decode_map) {
-        //     string_functions::replace_all(server_path, encoded, decoded);
-        // }
-        
-        // // std::printf("server_path is '%s'\n", server_path.c_str());
-
-
-        // if (not this->file_exists(this->directory, server_path)) {
-        //     this->send_404(client, "No directory " + server_path + " found");
-        //     std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
-        //     return false;
-        // }
         
 
         file_length = this->file_size(this->directory, server_path);
@@ -1930,6 +1836,7 @@ namespace networking {
             buffer = headers[CONNECTION];
         }
 
+
         message = "Connection: " + buffer + this->ending;
         bytes = (this->server_connection.secure_host()) ? 
                     SSL_write(client.secure_socket, message.c_str(), message.length()) :
@@ -1943,6 +1850,14 @@ namespace networking {
                         send(client.connected_socket, message.c_str(), message.length(), 0);
 
         
+        content_type = this->default_content_type;
+
+        if (server_path.find_last_of(".") != std::string::npos) {
+            buffer = server_path.substr(server_path.find_last_of("."));
+            if (string_functions::contains<std::string>(this->content_options, buffer, true)) {
+                content_type = this->content_options[buffer];
+            }
+        }
 
 
         message = "Content-Type: " + content_type + this->ending;
