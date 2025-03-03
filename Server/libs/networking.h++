@@ -745,7 +745,7 @@
                     void write32(std::ofstream& file, uint32_t value);
 
 
-                    void create_favicon_file(const std::string file_name = "../Client/files/favicon.ico");
+                    void create_favicon_file(const std::string file_name = "Client/files/favicon.ico");
 
 
                     bool file_exists(const std::string directory, const std::string file);

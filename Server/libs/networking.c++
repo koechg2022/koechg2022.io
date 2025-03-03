@@ -1846,6 +1846,12 @@ namespace networking {
         #if defined(crap_os)
             string_functions::replace_all(server_path, "/", "\\");
         #endif
+
+        if (string_functions::same_string(server_path, "favicon.ico")) {
+            if (not this->file_exists(this->directory, server_path)) {
+                this->create_favicon_file();
+            }
+        }
         
         if(not this->file_exists(this->directory, server_path)) {
             std::fprintf(stderr, "No file '%s' found.\n", (this->directory + server_path).c_str());
