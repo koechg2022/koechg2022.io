@@ -685,9 +685,9 @@
                     const std::string default_content_type = "application/octet-stream";
                     const std::string ending = "\r\n", 
                             #if defined(unix_os)
-                                directory = "../Client/",
+                                directory = "Client/",
                             #else
-                                directory = "..\\Client\\",
+                                directory = "Client\\",
                             #endif
                                     CONNECTION = "Connection",
                                     METHOD = "METHOD";
