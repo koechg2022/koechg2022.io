@@ -27,5 +27,6 @@ body nav ul li {
 }
 
 .page_title {
-    color : rgb(255, 252, 252);
+    /* color : rgb(255, 252, 252); */
+    color : rgba(1, 1, 1, 0.914);
 }

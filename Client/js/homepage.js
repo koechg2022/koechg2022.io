@@ -108,14 +108,14 @@ navigation.forEach((this_nav) => {
 const page_title = document.querySelector('.page_title');
 
 const page_titles = {
-    home_page : [`Swimmer`, `Reader`, `Programmer`, `Backpacker`],
-    about_page : [`About Geoffrey`],
-    github_page : [`Projects`],
-    bookrec_page : [`Books`],
-    photograpy_page : [`Photos`],
-    travel_page : [`Travel Photos and Blog`],
-    hobbies_page : [`Reading`, `Swimming`, `Sleeping`, `Coding`, `Traveling`],
-    contact_page : [`How to reach me`]
+    homepage : [`Swimmer`, `Reader`, `Programmer`, `Backpacker`],
+    about : [`About Geoffrey`],
+    github : [`Projects`],
+    books : [`Books`],
+    photography : [`Photos`],
+    travel : [`Travel Photos and Blog`],
+    hobbies : [`Reading`, `Swimming`, `Sleeping`, `Coding`, `Traveling`],
+    contact : [`How to reach me`]
 };
 
 page_title.innerText = page_titles[current_page_name()][Math.floor(Math.random() * page_titles[current_page_name()].length)];
@@ -184,6 +184,6 @@ async function get_file_data(file_name) {
 
 function current_page_name() {
     const path = window.location.pathname;
-    const the_answer = path.split("/").pop().replace(/\.html$/, '');;
+    const the_answer = path.split("/").pop().replace(/\.html$/, '');
     return the_answer;
 }
