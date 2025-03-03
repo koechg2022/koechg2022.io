@@ -1812,15 +1812,25 @@ namespace networking {
         int bytes, total;
         unsigned long index;
         char read[4 * kilo_byte];
+        size_t pos;
 
         if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
             server_path = headers[headers[METHOD]].substr(0, headers[headers[METHOD]].find_first_of("HTTP"));
             string_functions::strip(server_path, " ");
             if (string_functions::same_char(server_path[0], '/') and server_path.length() > 1) {
-                // std::printf("'%s' : Found the first char to be a forward slash. total length is %lu\n", server_path.c_str(), server_path.length());
                 server_path = server_path.substr(1);
-                // std::printf("'%s' : Total length is %lu\n", server_path.c_str(), server_path.length());
             }
+
+            pos = server_path.find_first_of(this->directory);
+            if (pos != std::string::npos and (server_path.compare(0, this->directory.length(), this->directory) == 0)) {
+                // std::printf("server_path is '%s'\n", server_path.c_str());
+                server_path = server_path.substr(this->directory.length());
+                // std::printf("server_path is '%s'\n", server_path.c_str());
+                if (server_path.empty()) {
+                    server_path = "/";
+                }
+            }
+
         }
         else {
             server_path = "/";
@@ -2011,6 +2021,7 @@ namespace networking {
                     headers = this->parse_message(std::string(message_buffer, bytes));
                     if (not headers.empty()) {
                         if (headers.contains(METHOD)) {
+                            
                             if (not this->serve_resource(*client, headers)) {
                                 std::printf("Closing connection to client '%s'.\n", client->hostname.c_str());
                                 this->server_connection.close_connection(client->connected_socket);
