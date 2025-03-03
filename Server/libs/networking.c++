@@ -1641,168 +1641,141 @@ namespace networking {
     }
 
     bool network_structures::http_server::serve_resource(network_structures::connected_host::client client, const std::string message_from_host) {
-        
-        if (this->server_connection) {
 
-            // const std::string path,
-            size_t index;
-            ssize_t bytes;
-            uintmax_t file_length;
-            std::map<std::string, std::string> headers = this->parse_message(message_from_host);
-            if (headers.contains(CONNECTION)) {
-                this->message_headers[CONNECTION] = headers[CONNECTION];
-            }
-            char message[4 * kilo_byte];
-            std::string full_path, file_content, content_type, this_string, 
-                                    server_path = headers.contains(METHOD) ? 
-                                                headers[headers[METHOD]] : "";
-        
-            server_path = server_path.substr(0, server_path.find_first_of("HTTP"));
-            
-            if (server_path.empty()) {
-                std::fprintf(stderr, "Failed to retrieve information the path.\n");
-                this->send_404(client);
-                return false;
-            }
-            std::printf("Reached 1.\n");
 
-            for (const auto& [encoded, decoded] : this->url_decode_map) {
-                string_functions::replace_all(server_path, encoded, decoded);
+
+        std::string message, content_type, server_path, buffer;
+
+        uintmax_t file_length;
+        int bytes, total;
+        unsigned long index;
+        char read[4 * kilo_byte];
+        size_t pos;
+
+        // std::map<std::string, std::vector<std::string> > directory_content = string_functions::get_directory_content(this->directory);
+        // for (auto thing = directory_content.begin(); thing != directory_content.end(); thing++) {
+        //     std::printf("%s:\n\t", thing->first.c_str());
+        //     for (auto data = thing->second.begin(); data != thing->second.end(); data++) {
+        //         std::printf("%s ", data->c_str());
+        //     }
+        //     std::printf("\n");
+        // }
+        std::map<std::string, std::string> headers = this->parse_message(message_from_host);
+        if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
+            
+            server_path = headers[headers[METHOD]];
+            pos = server_path.find_first_of("HTTP");
+            if (pos < server_path.length()) {
+                server_path = server_path.substr(0, pos);
             }
-            
-            
             string_functions::strip(server_path, " ");
-
-            if (string_functions::same_string("/", server_path)) {
-                server_path = "html/homepage.html";
+            if (string_functions::same_string(server_path, "/")) {
+                server_path = this->directory + "html/homepage.html";
             }
-
-            else {
-                server_path = (string_functions::same_char(server_path[0], '/') ? server_path.substr(1) : server_path);
+            else if (server_path.length() > 1 and server_path[0] == '/') {
+                server_path = server_path.substr(1);
             }
-
-            if (server_path.find_last_of(".JP") == server_path.length() - 3) {
-                server_path = server_path.substr(0, server_path.find_last_of(".JP")) + ".JPG";
-            }
-
-            std::printf("server_path is '%s'\n", server_path.c_str());
-            #if defined(crap_os)
-                string_functions::replace_all(server_path, "/", "\\");
-            #endif
-
-            if (not this->file_exists(this->directory, server_path)) {
-                std::fprintf(stderr, "File '%s%s' does not exist.\n", this->directory.c_str(), server_path.c_str());
-                this->send_404(client);
-                return false;
-            }
-            std::printf("Reached 2.\n");
-
-            file_length = this->file_size(this->directory, server_path);
-            index = server_path.find_last_of(".");
-
-            
-            if (index == std::string::npos) {
-                // There are no extensions
-                std::fprintf(stderr, "No extension to specify content type.\n");
-                this->send_404(client);
-                return false;
-            }
-            std::printf("Reached 3.\n");
-
-            content_type = this->content_options[server_path.substr(index)];
-            
-            if (content_type.empty()) {
-                content_type = this->default_content_type;
-            }
-
-            this_string = "HTTP/1.1 200 OK" + this->ending;
-            bytes = (this->server_connection.secure_host()) ? 
-                        SSL_write(client.secure_socket, this_string.c_str(), this_string.length()) : 
-                            send(client.connected_socket, this_string.c_str(), this_string.length(), 0);
-
-            std::printf("Sent %zd bytes of %lu bytes.\n", bytes, this_string.length());
-
-            
-            this_string = "Connection: " + message_headers[CONNECTION] + this->ending;
-            bytes = (this->server_connection.secure_host()) ? 
-                        SSL_write(client.secure_socket, this_string.c_str(), this_string.length()) : 
-                            send(client.connected_socket, this_string.c_str(), this_string.length(), 0);
-
-            std::printf("Sent %zd bytes of %lu bytes.\n", bytes, this_string.length());
-            
-            this_string = "Content-Length: " + std::to_string(file_length) + this->ending;
-            bytes = (this->server_connection.secure_host()) ? 
-                        SSL_write(client.secure_socket, this_string.c_str(), this_string.length()) : 
-                            send(client.connected_socket, this_string.c_str(), this_string.length(), 0);
-
-            std::printf("Sent %zd bytes of %lu bytes.\n", bytes, this_string.length());
-
-            
-            this_string = "Content-Type: " + content_type + this->ending;
-            bytes = (this->server_connection.secure_host()) ? 
-                        SSL_write(client.secure_socket, this_string.c_str(), this_string.length()) : 
-                            send(client.connected_socket, this_string.c_str(), this_string.length(), 0);
-
-            std::printf("Sent %zd bytes of %lu bytes.\n", bytes, this_string.length());
-
-            this_string = this->ending;
-            bytes = (this->server_connection.secure_host()) ? 
-                        SSL_write(client.secure_socket, this_string.c_str(), this_string.length()) : 
-                            send(client.connected_socket, this_string.c_str(), this_string.length(), 0);
-
-            std::printf("Sent %zd bytes of %lu bytes.\n\nDone with headers.\n", bytes, this_string.length());
-
-            
-            // Get the content of the file and send it over
-
-            std::fstream open_file(this->directory + full_path, std::ios_base::in | std::ios_base::binary);
-
-            if (not open_file.is_open()) {
-                std::fprintf(stderr, "Failed to open '%s'\n", (this->directory + full_path).c_str());
-                return false;
-            }
-
-            std::printf("Reached 4.\n");
-            // while (open_file.read(message, sizeof(file_content)).gcount() > 0) {
-            //     bytes = (this->server_connection.secure_host()) ? 
-            //             SSL_write(client.secure_socket, file_content.c_str(), file_content.length()) :
-            //                 send(client.connected_socket, file_content.c_str(), file_content.length(), 0);
-            //     if (bytes <= 0) {
-            //         open_file.close();
-            //         return false;
-            //     }
-            // }
-
-
-            while (open_file.read(message, sizeof(message))) {
-                bytes = (this->server_connection.secure_host()) ? 
-                        SSL_write(client.secure_socket, message, open_file.gcount()) :
-                        send(client.connected_socket, message, open_file.gcount(), 0);
-                if (bytes <= 0) {
-                    open_file.close();
-                    return false;
-                }
-            }
-            if (open_file.eof()) {
-                size_t remaining = open_file.gcount();
-                if (remaining > 0) {
-                    bytes = (this->server_connection.secure_host()) ? 
-                            SSL_write(client.secure_socket, message, remaining) :
-                            send(client.connected_socket, message, remaining, 0);
-                    if (bytes <= 0) {
-                        open_file.close();
-                        return false;
-                    }
-                }
-            }
-
-
-            std::printf("Reached 5.\n");
-
-            open_file.close();
-            return true;
         }
-        return false;
+
+        else {
+            server_path = this->directory + "html/homepage.html";
+        }
+
+        if ((pos = server_path.find(this->directory)) == 0) {
+            // std::printf("pos is %lu\n", pos);
+            // pos is at 0
+            server_path = server_path.substr(this->directory.length());
+        }
+
+        for (const auto& [encoded, decoded] : this->url_decode_map) {
+            string_functions::replace_all(server_path, encoded, decoded);
+        }
+        
+        // std::printf("server_path is '%s'\n", server_path.c_str());
+
+
+        if (not this->file_exists(this->directory, server_path)) {
+            this->send_404(client, "No directory " + server_path + " found");
+            std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
+            return false;
+        }
+
+        
+
+        file_length = this->file_size(this->directory, server_path);
+        
+        
+        message = "HTTP/1.1 200 OK" + this->ending;
+        bytes = (this->server_connection.secure_host()) ? 
+                    SSL_write(client.secure_socket, message.c_str(), message.length()) :
+                        send(client.connected_socket, message.c_str(), message.length(), 0);
+        
+
+
+        buffer = this->message_headers[CONNECTION];
+
+        if (headers.contains(CONNECTION)) {
+            buffer = headers[CONNECTION];
+        }
+
+        message = "Connection: " + buffer + this->ending;
+        bytes = (this->server_connection.secure_host()) ? 
+                    SSL_write(client.secure_socket, message.c_str(), message.length()) :
+                        send(client.connected_socket, message.c_str(), message.length(), 0);
+
+
+        
+        message = "Content-Length: " + std::to_string(file_length) + this->ending;
+        bytes = (this->server_connection.secure_host()) ? 
+                    SSL_write(client.secure_socket, message.c_str(), message.length()) :
+                        send(client.connected_socket, message.c_str(), message.length(), 0);
+
+        
+
+
+        message = "Content-Type: " + content_type + this->ending;
+        bytes = (this->server_connection.secure_host()) ? 
+                    SSL_write(client.secure_socket, message.c_str(), message.length()) :
+                        send(client.connected_socket, message.c_str(), message.length(), 0);
+
+
+        
+
+        message = this->ending;
+        bytes = (this->server_connection.secure_host()) ? 
+                    SSL_write(client.secure_socket, message.c_str(), message.length()) :
+                        send(client.connected_socket, message.c_str(), message.length(), 0);
+
+
+
+
+        std::ifstream open_file(this->directory + server_path, std::ios::binary);
+        if (!open_file.is_open()) {
+            std::fprintf(stderr, "Failed to open file '%s%s'\n", this->directory.c_str(), server_path.c_str());
+            this->send_400(client, "Failed to open '" + this->directory + server_path + "'");
+            return false;
+        }
+
+        total = 0;
+
+        while (open_file.read(read, 4 * kilo_byte) || open_file.gcount()) {
+            size_t bytes_read = open_file.gcount();
+            bytes = (this->server_connection.secure_host()) ?
+                SSL_write(client.secure_socket, read, bytes_read) :
+                send(client.connected_socket, read, bytes_read, 0);
+            
+            if (bytes <= 0) {
+                std::fprintf(stderr, "Failed to send data. Error: %d\n", errno);
+                open_file.close();
+                return false;
+            }
+            total += bytes;
+        }
+
+        open_file.close();
+        return total == file_length;
+
+    
     }
 
     bool network_structures::http_server::serve_resource(network_structures::connected_host::client client, std::map<std::string, std::string> headers) {
@@ -1826,7 +1799,7 @@ namespace networking {
         // }
 
         if (headers.contains(METHOD) and headers.contains(headers[METHOD])) {
-            // std::printf("'%s'\n", headers[headers[METHOD]].c_str());
+            
             server_path = headers[headers[METHOD]];
             pos = server_path.find_first_of("HTTP");
             if (pos < server_path.length()) {
@@ -1846,7 +1819,7 @@ namespace networking {
         }
 
         if ((pos = server_path.find(this->directory)) == 0) {
-            std::printf("pos is %lu\n", pos);
+            // std::printf("pos is %lu\n", pos);
             // pos is at 0
             server_path = server_path.substr(this->directory.length());
         }
@@ -1855,15 +1828,16 @@ namespace networking {
             string_functions::replace_all(server_path, encoded, decoded);
         }
         
-        std::printf("server_path is '%s'\n", server_path.c_str());
+        // std::printf("server_path is '%s'\n", server_path.c_str());
 
 
         if (not this->file_exists(this->directory, server_path)) {
+            this->send_404(client, "No directory " + server_path + " found");
             std::fprintf(stderr, "No file '%s%s' found\n", this->directory.c_str(), server_path.c_str());
             return false;
         }
 
-
+        
 
         file_length = this->file_size(this->directory, server_path);
         

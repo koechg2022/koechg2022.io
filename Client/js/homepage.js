@@ -19,6 +19,53 @@ const system_slash = (function() {
 
 const file_directory = `files`;
 
+const pages = ["about", "books", "contact", "github", "hobbies", "homepage", "photography", "travel"];
+
+const background_images = {
+    beach : `${file_directory}${system_slash}dutch beach and fence.avif`,
+    desert_road : `${file_directory}${system_slash}Desert road.jpg`,
+    geoff_and_anna_one : `${file_directory}${system_slash}geoff anna and her roommate.JPG`,
+    geoff_on_throne : `${file_directory}${system_slash}geoffrey on throne.JPG`,
+    vlierhof_one : `${file_directory}${system_slash}vlierhof crew biking 1.JPG`,
+    vlierhof_two : `${file_directory}${system_slash}vlierhof crew biking 2.JPG`,
+    vlierhof_three : `${file_directory}${system_slash}vlierhof crew biking 3.JPG`,
+    vlierhof_four : `${file_directory}${system_slash}vlierhof crew biking 4.JPG`
+};
+
+const page_options = {
+    homepage : [
+        background_images["geoff_on_throne"], background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    about : [
+        background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    github : [
+        background_images["beach"], background_images["desert_road"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    hobbies : [
+        background_images["geoff_on_throne"], background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    books : [
+        background_images["geoff_on_throne"], background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    photography : [
+        background_images["geoff_on_throne"], background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    travel : [
+        background_images["geoff_on_throne"], background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]],
+    contact : [
+        background_images["geoff_on_throne"], background_images["beach"], background_images["desert_road"], 
+        background_images["geoff_and_anna_one"], background_images["geoff_on_throne"], background_images["vlierhof_one"], 
+        background_images["vlierhof_two"], background_images["vlierhof_three"], background_images["vlierhof_four"]]
+}
+
 const navigation = document.getElementById('nav_ul').querySelectorAll('li');
 
 const logo = document.getElementById('logo');
